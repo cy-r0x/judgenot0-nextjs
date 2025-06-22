@@ -97,6 +97,7 @@ export function EditorSection({ problemData }) {
   const [code, setCode] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [resultBanner, setResultBanner] = useState({
     visible: false,
     result: "",
@@ -108,7 +109,7 @@ export function EditorSection({ problemData }) {
     if (resultBanner.visible) {
       timer = setTimeout(() => {
         setResultBanner((prev) => ({ ...prev, visible: false }));
-      }, 5000);
+      }, 2000);
     }
 
     return () => {
@@ -140,7 +141,6 @@ export function EditorSection({ problemData }) {
 
       console.log("Trying to connect to backend via proxy...");
 
-      // Use the Next.js API route that proxies to the Flask backend
       const response = await axios.post("/api/submit", requestData, {
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export function EditorSection({ problemData }) {
   };
 
   return (
-    <div className="w-[40%] border-l flex flex-col p-4">
+    <div className="w-[35%] border-l flex flex-col p-4">
       <div className="mb-3">
         <select
           name="language"

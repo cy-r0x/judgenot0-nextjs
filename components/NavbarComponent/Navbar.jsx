@@ -8,17 +8,25 @@ function Navbar() {
           <div className="flex items-center gap-1">
             <img src="/0.png" alt="" className="h-10" />
             <Link href={"/"} key={"home-route"}>
-              <p className="font-semibold text-md lg:text-lg cursor-pointer">
-                <span className="hover:text-orange-500 transition-colors">
-                  Judge
-                </span>
+              <p className="font-semibold text-md lg:text-lg cursor-pointer hover:text-orange-500">
+                <span className="transition-colors">Judge</span>
                 <span className="text-orange-500">Not0</span>
               </p>
             </Link>
           </div>
-          <Link href="/login" key={"login-btn"}>
-          <Button name={"Login"}/>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href={"/"} key={"home"}>
+              <p className="hover:text-orange-500 transition-colors">Home</p>
+            </Link>
+            <Link href={"/setter-panel"}>
+              <p className="hover:text-orange-500 transition-colors">
+                Setters Panel
+              </p>
+            </Link>
+            <Link href="/login" key={"login-btn"}>
+              <Button name={"Login"} />
+            </Link>
+          </div>
         </div>
       </div>
     </>

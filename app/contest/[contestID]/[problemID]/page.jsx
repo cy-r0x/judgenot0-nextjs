@@ -27,7 +27,7 @@ async function ProblemDescription({ params }) {
       <div className="flex flex-col h-[calc(100vh-70px)]">
         <div className="flex flex-grow overflow-hidden">
           {/* Problem description - 60% width */}
-          <div className="w-[60%] overflow-y-auto p-4">
+          <div className="w-[65%] overflow-y-auto p-4">
             {/* Back button */}
             <div className="mb-3">
               <Link
@@ -60,25 +60,27 @@ async function ProblemDescription({ params }) {
               </p>
             </div>
 
-            <div className="mb-6 prose max-w-none text-justify">
-              <p>{decodeBase64Utf8(problem.descriptionData)}</p>
+            <div className="prose max-w-none text-justify leading-relaxed text-gray-700 dark:text-gray-300">
+              <p className="whitespace-pre-wrap">
+                {decodeBase64Utf8(problem.descriptionData)}
+              </p>
             </div>
 
             <div className="space-y-4 mb-4">
               {/* input desc */}
               <div className="space-y-2">
                 <p className="text-2xl font-bold">Input</p>
-                <pre className="">
+                <p className="whitespace-pre-wrap">
                   {decodeBase64Utf8(problem.descriptionInput)}
-                </pre>
+                </p>
               </div>
 
               {/* output desc */}
               <div className="space-y-2">
                 <p className="text-2xl font-bold">Output</p>
-                <pre className="">
+                <p className="whitespace-pre-wrap">
                   {decodeBase64Utf8(problem.descriptionOutput)}
-                </pre>
+                </p>
               </div>
             </div>
 

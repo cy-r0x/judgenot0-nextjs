@@ -5,7 +5,6 @@ function Loading() {
         <div className="absolute inset-5 border-5 border-zinc-800 rounded-full"></div>
         <div className="absolute inset-5 border-5 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
       </div>
-
     </>
   );
 }
