@@ -27,7 +27,7 @@ async function ProblemDescription({ params }) {
       <div className="flex flex-col h-[calc(100vh-70px)]">
         <div className="flex flex-grow overflow-hidden">
           {/* Problem description - 60% width */}
-          <div className="w-[65%] overflow-y-auto p-4">
+          <div className="w-[60%] overflow-y-auto p-4">
             {/* Back button */}
             <div className="mb-3">
               <Link

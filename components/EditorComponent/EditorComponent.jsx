@@ -1,43 +1,42 @@
 "use client";
-import { Editor } from "@monaco-editor/react";
-import { useState, useRef } from "react";
 
-function CodeEditor({ onChange }) {
-  const [lang, setLang] = useState("cpp");
-  const [defaultCode, setDefaultCode] = useState(
-    `#include <bits/stdc++.h>
-using namespace std;
+import { material } from "@uiw/codemirror-theme-material";
+import CodeMirror from "@uiw/react-codemirror";
+import { cpp } from "@codemirror/lang-cpp";
+import { python } from "@codemirror/lang-python";
+import { java } from "@codemirror/lang-java";
 
-int main() {
-  // Write your code here;
-  return 0;
-}`
-  );
+function CodeEditor({ handleChange, selectedLanguage }) {
+  let lang;
+  let comment = `// Write your code here`;
 
-  const editorRef = useRef(null);
-
-  function handleEditorDidMount(editor, monaco) {
-    editorRef.current = editor;
-    // Initialize with default code
-    if (onChange) {
-      onChange(defaultCode);
-    }
+  switch (selectedLanguage) {
+    case "cpp":
+      lang = cpp();
+      break;
+    case "python":
+      lang = python();
+      comment = `# Write your code here`;
+      break;
+    case "java":
+      lang = java();
+      break;
+    default:
+      lang = cpp();
+      break;
   }
 
-  function handleEditorChange(value) {
-    if (onChange) {
-      onChange(value);
-    }
-  }
+  const changeCode = (value) => {
+    handleChange(value);
+  };
 
   return (
-    <Editor
+    <CodeMirror
+      value={comment}
       height="72vh"
-      defaultLanguage={lang}
-      defaultValue={defaultCode}
-      theme="vs-dark"
-      onMount={handleEditorDidMount}
-      onChange={handleEditorChange}
+      extensions={[lang]}
+      onChange={changeCode}
+      theme={material}
     />
   );
 }
