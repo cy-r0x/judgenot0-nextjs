@@ -6,9 +6,9 @@ import { cpp } from "@codemirror/lang-cpp";
 import { python } from "@codemirror/lang-python";
 import { java } from "@codemirror/lang-java";
 
-function CodeEditor({ handleChange, selectedLanguage }) {
+function CodeEditor({ handleChange, selectedLanguage, initialValue = "" }) {
   let lang;
-  let comment = `// Write your code here`;
+  let comment = initialValue || `// Write your code here`;
 
   switch (selectedLanguage) {
     case "cpp":
@@ -16,7 +16,7 @@ function CodeEditor({ handleChange, selectedLanguage }) {
       break;
     case "python":
       lang = python();
-      comment = `# Write your code here`;
+      if (!initialValue) comment = `# Write your code here`;
       break;
     case "java":
       lang = java();

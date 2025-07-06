@@ -121,12 +121,14 @@ export function EditorSection({ problemData }) {
   };
 
   const handleSubmit = async () => {
-    const encodedCode = btoa(encodeURIComponent(code));
     const requestData = {
-      testCases: problemData?.testCases || [],
-      time: problemData?.time || 1000,
-      memory: problemData?.memory || 128,
-      code: encodedCode,
+      testCases: [
+        ...problemData.sampleTestCases,
+        ...problemData.regularTestCases,
+      ],
+      timeLimit: problemData.timeLimit,
+      memoryLimit: problemData.memoryLimit,
+      code: code,
       language: selectedLanguage,
     };
     console.log(requestData);

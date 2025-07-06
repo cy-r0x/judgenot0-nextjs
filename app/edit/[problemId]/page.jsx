@@ -1,9 +1,9 @@
-import ProseMirrorEditor from "@/components/ProseMirrorEditor/ProseMirrorEditor";
+import ProblemEditComponent from "@/components/ProblemEditComponent/ProblemEditComponent";
 
 export default () => {
   return (
-    <div className="my-4 px-4">
-      <ProseMirrorEditor />
+    <div className="my-4">
+      <ProblemEditComponent />
     </div>
   );
 };
