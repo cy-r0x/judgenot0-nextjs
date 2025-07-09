@@ -1,5 +1,5 @@
 import problemListData from "@/utils/fetchProblemList";
-import ProblemComponent from "@/components/ProblemComponent/ProblemComponent";
+import ProblemComponent from "@/components/ProblemListComponent/ProblemListComponent";
 import Bar from "@/components/BarComponent/BarComponent";
 import FormatMention from "@/handlers/mentionHandler";
 import Link from "next/link";
@@ -16,10 +16,7 @@ async function ProblemList({ params }) {
           <div className="flex flex-col gap-2">
             {problemData.map((problem, index) => (
               <Link href={`/contest/${contestID}/${problem.id}`} key={index}>
-                <ProblemComponent
-                  problemData={problem}
-                  index={index}
-                />
+                <ProblemComponent problemData={problem} index={index} />
               </Link>
             ))}
           </div>

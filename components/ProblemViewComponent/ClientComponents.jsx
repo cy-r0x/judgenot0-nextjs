@@ -16,41 +16,13 @@ export function CopyButton({ text }) {
   return (
     <button
       onClick={copyToClipboard}
-      className="absolute top-2 right-2 p-1 rounded bg-zinc-800 hover:bg-zinc-700 transition-colors"
+      className={`absolute top-2 right-2 p-1 rounded  transition-colors ${
+        copied ? "bg-base-color" : " bg-zinc-800 hover:bg-zinc-700"
+      }`}
       title="Copy to clipboard"
+      disabled={copied}
     >
-      {copied ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-orange-500"
-        >
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-orange-500"
-        >
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-        </svg>
-      )}
+      {copied ? <p>Copied</p> : <p>Copy</p>}
     </button>
   );
 }
@@ -118,6 +90,7 @@ export function EditorSection({ problemData }) {
 
   const handleCompileRun = () => {
     console.log("Compile and Run - Problem Data:", problemData);
+    console.log(code);
   };
 
   const handleSubmit = async () => {
@@ -143,19 +116,29 @@ export function EditorSection({ problemData }) {
   };
 
   return (
-    <div className="w-[40%] border-l flex flex-col p-4">
-      <div className="mb-3">
-        <select
-          name="language"
-          id="language-select"
-          className="p-2 border rounded w-full"
-          value={selectedLanguage}
-          onChange={handleLanguageChange}
-        >
-          <option value="cpp">C++</option>
-          <option value="java">Java</option>
-          <option value="python">Python</option>
-        </select>
+    <div className="w-[40%] border-l flex flex-col px-4 py-2">
+      <div className="mb-3 flex justify-between items-center">
+        <div>
+          <select
+            name="language"
+            id="language-select"
+            className="p-2 border rounded w-full bg-zinc-800"
+            value={selectedLanguage}
+            onChange={handleLanguageChange}
+          >
+            <option value="cpp">C++</option>
+            <option value="java">Java</option>
+            <option value="python">Python</option>
+          </select>
+        </div>
+        <div className="flex justify-end gap-3 mt-3">
+          <Button name={"Compile and Run"} onClick={handleCompileRun} />
+          <Button
+            name={isSubmitting ? "Submitting..." : "Submit"}
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          />
+        </div>
       </div>
       <div className="flex-grow">
         <CodeEditor
@@ -163,15 +146,6 @@ export function EditorSection({ problemData }) {
           selectedLanguage={selectedLanguage}
         />
       </div>
-      <div className="flex justify-end gap-3 mt-3">
-        <Button name={"Compile and Run"} onClick={handleCompileRun} />
-        <Button
-          name={isSubmitting ? "Submitting..." : "Submit"}
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        />
-      </div>
-
       {/* Result Banner */}
       <ResultBanner
         result={resultBanner.result}

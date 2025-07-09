@@ -53,7 +53,7 @@ function setterPanel() {
             <div
               className={`px-4 py-3 mb-1 rounded-lg transition-all duration-200 flex items-center gap-3 cursor-pointer ${
                 activeItem === idx
-                  ? "bg-orange-500/90 text-white shadow-md shadow-orange-900/20 font-medium"
+                  ? "bg-base-color/90 text-white shadow-md shadow-orange-900/20 font-medium"
                   : "hover:bg-zinc-800/70 text-zinc-400 hover:text-white"
               }`}
               key={`nav-item-${idx}`}
@@ -73,7 +73,7 @@ function setterPanel() {
         <div className="bg-zinc-900/80 backdrop-blur-sm rounded-xl shadow-xl border border-zinc-800/50 p-6 h-full">
           <div className="flex justify-between items-center pb-4 mb-6 border-b border-zinc-800">
             <div className="flex items-center space-x-2">
-              <span className="p-2 bg-orange-500/10 text-orange-400 rounded-lg">
+              <span className="p-2 bg-base-color/10 text-base-color rounded-lg">
                 {menuItems[activeItem].icon}
               </span>
               <h1 className="text-2xl font-bold text-white">

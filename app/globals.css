@@ -2,7 +2,8 @@
 
 :root {
   --background: #09090b;
-  --foreground: #ededed;
+  --foreground: #d7d7d7;
+  --base-color: #ff6900;
 }
 
 
@@ -10,4 +11,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.bg-base-color{
+  background-color: var(--base-color);
+}
+
+.text-base-color{
+  color: var(--base-color);
 }

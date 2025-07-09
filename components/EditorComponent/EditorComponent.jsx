@@ -1,42 +1,27 @@
-"use client";
-
-import { material } from "@uiw/codemirror-theme-material";
+import { monokai } from "@uiw/codemirror-theme-monokai";
 import CodeMirror from "@uiw/react-codemirror";
 import { cpp } from "@codemirror/lang-cpp";
 import { python } from "@codemirror/lang-python";
 import { java } from "@codemirror/lang-java";
 
-function CodeEditor({ handleChange, selectedLanguage, initialValue = "" }) {
-  let lang;
-  let comment = initialValue || `// Write your code here`;
+function CodeEditor({ handleChange, selectedLanguage }) {
+  const languageExtensions = {
+    cpp: cpp(),
+    python: python(),
+    java: java(),
+  };
 
-  switch (selectedLanguage) {
-    case "cpp":
-      lang = cpp();
-      break;
-    case "python":
-      lang = python();
-      if (!initialValue) comment = `# Write your code here`;
-      break;
-    case "java":
-      lang = java();
-      break;
-    default:
-      lang = cpp();
-      break;
-  }
-
+  const lang = languageExtensions[selectedLanguage] || cpp();
   const changeCode = (value) => {
     handleChange(value);
   };
 
   return (
     <CodeMirror
-      value={comment}
-      height="72vh"
+      height="calc(100vh - 150px)"
       extensions={[lang]}
       onChange={changeCode}
-      theme={material}
+      theme={monokai}
     />
   );
 }
