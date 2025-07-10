@@ -3,7 +3,7 @@ import { RiGroupLine } from "react-icons/ri";
 function ProblemComponent({ problemData, index }) {
   return (
     <>
-      <div className="border-4 border-zinc-900 px-3 py-3 bg-zinc-900 flex items-center justify-between hover:border-orange-500 cursor-pointer transition-all">
+      <div className="border-4 border-zinc-800 px-3 py-3 bg-zinc-800 flex items-center justify-between hover:border-orange-500 cursor-pointer transition-all">
         <div className="flex gap-5 items-center">
           <p className="text-4xl font-semibold">
             {String.fromCharCode("A".charCodeAt(0) + index)}

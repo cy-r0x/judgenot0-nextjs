@@ -6,7 +6,6 @@ import Bar from "@/components/BarComponent/BarComponent";
 import { useRouter } from "next/navigation";
 
 export default () => {
-
   const [formData, setFormData] = useState({
     userId: "",
     password: "",
@@ -25,7 +24,7 @@ export default () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted with:", formData);
-    router.push('/');
+    router.push("/");
   };
 
   return (

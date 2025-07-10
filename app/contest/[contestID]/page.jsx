@@ -1,5 +1,6 @@
 import problemListData from "@/utils/fetchProblemList";
 import ProblemComponent from "@/components/ProblemListComponent/ProblemListComponent";
+import TimeCounterComponent from "@/components/TimeCounterComponent/TimeCounterComponent";
 import Bar from "@/components/BarComponent/BarComponent";
 import FormatMention from "@/handlers/mentionHandler";
 import Link from "next/link";
@@ -25,15 +26,12 @@ async function ProblemList({ params }) {
         <div className="flex-[3] text-wrap space-y-4">
           <div className="space-y-4">
             <Bar title={"DIU Take-off Preliminary Round Spring-2026"} />
-            <div className="h-32 border-4 border-zinc-900 flex flex-col items-center justify-center gap-y-1">
-              <p className="font-semibold text-2xl">Ends In</p>
-              <p className="font-semibold text-2xl">02:19:30</p>
-            </div>
+            <TimeCounterComponent startUnix={1752178750} endUnix={1757504340} />
           </div>
 
           <div className="space-y-4">
             <Bar title={"Setters"} />
-            <div className="min-h-32 border-4 border-zinc-900 flex items-center justify-center px-4 text-justify">
+            <div className="min-h-32 border-4 border-zinc-800 flex items-center justify-center px-4 text-justify">
               <FormatMention
                 text={"Kichu Random Problem Set korse @cyr0x and @rafiwho"}
               />

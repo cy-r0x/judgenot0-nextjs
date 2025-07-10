@@ -245,7 +245,7 @@ const data = {
   },
   sampleTestCases: [
     {
-      input: "6 30\n5 6\n6 5\n4 6\n6 2\n5 3\n2 6",
+      input: "6 30\n5 6\n6 5\n4 6\n6 2\n5 3\n2 6\n2 6",
       output: "28\n",
     },
   ],

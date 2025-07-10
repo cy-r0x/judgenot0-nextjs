@@ -17,7 +17,7 @@ export function CopyButton({ text }) {
     <button
       onClick={copyToClipboard}
       className={`absolute top-2 right-2 p-1 rounded  transition-colors ${
-        copied ? "bg-base-color" : " bg-zinc-800 hover:bg-zinc-700"
+        copied ? "bg-orange-500" : " bg-zinc-800 hover:bg-zinc-700"
       }`}
       title="Copy to clipboard"
       disabled={copied}

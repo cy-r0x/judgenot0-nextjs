@@ -1,6 +1,6 @@
 import "./globals.css";
-
 import Navbar from "@/components/NavbarComponent/Navbar";
+import Loading from "./loading";
 
 export const metadata = {
   title: "JudgeNot0 | An Online Judge",

@@ -14,18 +14,42 @@ function Navbar() {
               </p>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href={"/"} key={"home"}>
-              <p className="hover:text-orange-500 transition-colors">Home</p>
-            </Link>
-            <Link href={"/setter-panel"}>
-              <p className="hover:text-orange-500 transition-colors">
-                Setters Panel
-              </p>
-            </Link>
-            <Link href="/login" key={"login-btn"}>
-              <Button name={"Login"} />
-            </Link>
+          <div>
+            <ul className="flex items-center gap-4">
+              <li>
+                <Link href={"/"} key={"home"}>
+                  <p className="hover:text-orange-500 transition-colors">
+                    Home
+                  </p>
+                </Link>
+              </li>
+              <li>
+                <Link href={"/"} key={"home"}>
+                  <p className="hover:text-orange-500 transition-colors">
+                    My Submissions
+                  </p>
+                </Link>
+              </li>
+              <li>
+                <Link href={"/"} key={"home"}>
+                  <p className="hover:text-orange-500 transition-colors">
+                    Leaderboard
+                  </p>
+                </Link>
+              </li>
+              <li>
+                <Link href={"/setter-panel"}>
+                  <p className="hover:text-orange-500 transition-colors">
+                    Setters Panel
+                  </p>
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" key={"login-btn"}>
+                  <Button name={"Login"} />
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

@@ -2,37 +2,51 @@ import { CopyButton } from "./ClientComponents";
 import KatexRenderer from "@/components/KatexRenderer/KatexRenderer";
 import convertTiptapToHtml from "@/utils/tiptapToHtml";
 import Link from "next/link";
+import { useMemo } from "react";
 
 export default function ProblemViewComponent({ problem, contestID }) {
-  const descriptionHtml = convertTiptapToHtml(problem.description);
-  const inputDescriptionHtml = convertTiptapToHtml(problem.inputDescription);
-  const outputDescriptionHtml = convertTiptapToHtml(problem.outputDescription);
+  const descriptionHtml = useMemo(
+    () => convertTiptapToHtml(problem.description),
+    [problem.description]
+  );
+  const inputDescriptionHtml = useMemo(
+    () => convertTiptapToHtml(problem.inputDescription),
+    [problem.inputDescription]
+  );
+  const outputDescriptionHtml = useMemo(
+    () => convertTiptapToHtml(problem.outputDescription),
+    [problem.outputDescription]
+  );
 
   return (
     <>
       <div className=" overflow-y-auto p-4">
         {/* Back button */}
         <div className="mb-3">
-          <Link
-            href={`/contest/${contestID}`}
-            className="inline-flex items-center text-base-color hover:text-orange-700 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mr-1"
+          {contestID ? (
+            <Link
+              href={`/contest/${contestID}`}
+              className="inline-flex items-center text-orange-500 hover:text-orange-600 transition-colors"
             >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to Problems
-          </Link>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back to Problems
+            </Link>
+          ) : (
+            <div></div>
+          )}
         </div>
 
         <h1 className="text-2xl font-bold mb-4">{problem.name}</h1>

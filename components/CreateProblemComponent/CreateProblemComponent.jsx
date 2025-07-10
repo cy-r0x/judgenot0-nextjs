@@ -31,7 +31,7 @@ function CreateProblem({ setModalActive }) {
         "Problem created successfully! You'll be redirected to add more details."
       );
       setTitle("");
-      setModalActive(false); // Close modal after successful creation
+      setModalActive(false);
     } catch (error) {
       console.error("Error creating problem:", error);
       alert("Failed to create problem. Please try again.");

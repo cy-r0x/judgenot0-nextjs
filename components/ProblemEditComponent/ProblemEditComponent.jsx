@@ -74,7 +74,7 @@ export default function ProblemEditComponent() {
                 onClick={() => handleTabChange(index)}
                 className={`px-4 py-3 transition-colors cursor-pointer ${
                   activeTab === index
-                    ? "bg-base-color text-white font-medium"
+                    ? "bg-orange-500 text-white font-medium"
                     : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
                 }`}
               >
