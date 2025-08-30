@@ -14,14 +14,14 @@ export default async function ProblemDescription({ params }) {
     solutions: problem.solutions || [],
   };
 
-  const { contestID } = await params;
+  const { contestId } = await params;
 
   return (
     <div className="flex flex-col h-[calc(100vh-70px)] overflow-hidden">
       <div className="flex flex-grow overflow-hidden">
         {/* Problem description - 60% width */}
         <div className="w-[60%] overflow-auto">
-          <ProblemViewComponent problem={problem} contestID={contestID} />
+          <ProblemViewComponent problem={problem} contestId={contestId} />
         </div>
         {/* Editor section - 40% width - Client-side rendered */}
         <EditorSection problemData={problemData} />

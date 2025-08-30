@@ -4,7 +4,7 @@ import convertTiptapToHtml from "@/utils/tiptapToHtml";
 import Link from "next/link";
 import { useMemo } from "react";
 
-export default function ProblemViewComponent({ problem, contestID }) {
+export default function ProblemViewComponent({ problem, contestId }) {
   const descriptionHtml = useMemo(
     () => convertTiptapToHtml(problem.description),
     [problem.description]
@@ -23,9 +23,9 @@ export default function ProblemViewComponent({ problem, contestID }) {
       <div className=" overflow-y-auto p-4">
         {/* Back button */}
         <div className="mb-3">
-          {contestID ? (
+          {contestId ? (
             <Link
-              href={`/contest/${contestID}`}
+              href={`/contest/${contestId}`}
               className="inline-flex items-center text-orange-500 hover:text-orange-600 transition-colors"
             >
               <svg

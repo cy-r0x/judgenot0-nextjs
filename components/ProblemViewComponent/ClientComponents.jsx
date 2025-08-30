@@ -144,6 +144,24 @@ export function EditorSection({ problemData }) {
         <CodeEditor
           handleChange={setCode}
           selectedLanguage={selectedLanguage}
+          basicSetup={{
+            lineNumbers: true,
+            highlightActiveLineGutter: true,
+            highlightSpecialChars: true,
+            foldGutter: true,
+            dropCursor: false,
+            allowMultipleSelections: false,
+            indentOnInput: false,
+            syntaxHighlighting: true,
+            bracketMatching: true,
+            rectangularSelection: false,
+            crosshairCursor: false,
+            highlightActiveLine: false,
+            highlightSelectionMatches: true,
+            closeBrackets: false,
+            autocompletion: false,
+            tabSize: 2,
+          }}
         />
       </div>
       {/* Result Banner */}

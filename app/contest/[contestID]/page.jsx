@@ -6,7 +6,7 @@ import FormatMention from "@/handlers/mentionHandler";
 import Link from "next/link";
 
 async function ProblemList({ params }) {
-  const { contestID } = await params;
+  const { contestId } = await params;
   const problemData = await problemListData.getProblems();
 
   return (
@@ -16,7 +16,7 @@ async function ProblemList({ params }) {
           <Bar title={"Problems"} />
           <div className="flex flex-col gap-2">
             {problemData.map((problem, index) => (
-              <Link href={`/contest/${contestID}/${problem.id}`} key={index}>
+              <Link href={`/contest/${contestId}/${problem.id}`} key={index}>
                 <ProblemComponent problemData={problem} index={index} />
               </Link>
             ))}

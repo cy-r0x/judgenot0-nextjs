@@ -6,7 +6,7 @@ import SubmissionDataModule from "@/utils/fetchSubmissons";
 import Link from "next/link";
 
 export default async function SubmissionsTable({ params }) {
-  const { contestID } = await params;
+  const { contestId } = await params;
   const mySubmissions = await SubmissionDataModule.getSubmissions();
 
   const getStatusIcon = (status) => {
@@ -97,13 +97,19 @@ export default async function SubmissionsTable({ params }) {
                 key={index}
                 className="border-t border-zinc-700 hover:bg-zinc-800 transition-colors duration-150"
               >
-                <td className="py-3 px-4 font-mono text-orange-500">
-                  {item.submissionID}
+                <td className="py-3 px-4 font-mono text-orange-500 hover:underline">
+                  {
+                    <Link
+                      href={`/contest/${contestId}/submissions/${item.submissionID}`}
+                    >
+                      {item.submissionID}
+                    </Link>
+                  }
                 </td>
                 <td className="py-3 px-4">{item.userName}</td>
                 <td className="py-3 px-4">{getLanguage(item.language)}</td>
-                <td className="py-3 px-4 text-blue-400 underline">
-                  <Link href={`/contest/${contestID}/${item.problem}`}>
+                <td className="py-3 px-4 text-blue-400 hover:underline">
+                  <Link href={`/contest/${contestId}/${item.problem}`}>
                     {item.problem}
                   </Link>
                 </td>
