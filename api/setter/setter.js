@@ -17,10 +17,6 @@ setterModule.getProblems = async () => {
     });
     return response.data;
   } catch (error) {
-    console.error(
-      "Error fetching problems:",
-      error.response?.data || error.message
-    );
     return {
       error: error.response?.data?.message || "Failed to fetch problems",
     };

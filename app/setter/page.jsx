@@ -6,24 +6,57 @@ import { MdCreate, MdList } from "react-icons/md";
 import Button from "@/components/ButtonComponent/Button";
 import CreateProblem from "@/components/CreateProblemComponent/CreateProblemComponent";
 import setterModule from "@/api/setter/setter";
+import { useRouter } from "next/navigation";
 
 function SetterPanel() {
+  const router = useRouter();
   const [problemList, setProblemList] = useState([]);
   const [activeItem, setActiveItem] = useState(0);
   const [modalActive, setModalActive] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProblem = async () => {
-      const data = await setterModule.getProblems();
-      if (data.error) {
-        console.log(data.error);
-        return;
+    const fetchProblems = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await setterModule.getProblems();
+
+        if (data.error) {
+          // Check if it's an authentication error
+          if (
+            data.error === "No access token found" ||
+            data.error === "Invalid or expired token" ||
+            data.error === "Invalid Token"
+          ) {
+            // Redirect to login page for auth errors
+            router.push("/login");
+            return;
+          }
+
+          // Handle other API errors
+          throw new Error(data.error);
+        }
+
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setProblemList(data);
+        } else {
+          setProblemList([]);
+          console.warn("API returned non-array data:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching problems:", error);
+        setError(error.message || "Failed to load problems");
+      } finally {
+        setLoading(false);
       }
-      setProblemList(data);
-      console.log(data);
     };
-    fetchProblem();
-  }, []);
+
+    fetchProblems();
+  }, [router]);
 
   const handleCreate = () => {
     setModalActive(true);
@@ -125,7 +158,42 @@ function SetterPanel() {
               </div>
             </div>
 
-            {problemList.length > 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                  <span className="text-zinc-300 text-lg">
+                    Loading problems...
+                  </span>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="mt-6 p-6 rounded-lg bg-red-900/20 border border-red-700/50 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <svg
+                    className="w-6 h-6 text-red-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-red-400 font-medium">
+                    Error Loading Problems
+                  </span>
+                </div>
+                <p className="text-red-300 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : problemList.length > 0 ? (
               <div className="bg-zinc-800/70 rounded-lg overflow-hidden shadow-lg border border-zinc-700/50">
                 <table className="min-w-full divide-y divide-zinc-700">
                   <thead className="bg-zinc-700/50">
@@ -153,7 +221,7 @@ function SetterPanel() {
                   <tbody className="bg-zinc-800/30 divide-y divide-zinc-700/50">
                     {problemList.map((problem, index) => (
                       <tr
-                        key={index}
+                        key={problem.id || index}
                         className="hover:bg-zinc-700/30 transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
@@ -178,10 +246,31 @@ function SetterPanel() {
               </div>
             ) : (
               <div className="mt-6 p-6 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-center">
-                <p className="text-zinc-500">
+                <div className="flex items-center justify-center space-x-2 mb-3">
+                  <svg
+                    className="w-6 h-6 text-zinc-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-zinc-400 font-medium">
+                    No Problems Found
+                  </span>
+                </div>
+                <p className="text-zinc-500 mb-4">
                   No problems available yet. Create your first problem to get
                   started.
                 </p>
+                <Button
+                  name="Create Your First Problem"
+                  icon={<MdCreate />}
+                  onClick={handleCreate}
+                />
               </div>
             )}
           </div>

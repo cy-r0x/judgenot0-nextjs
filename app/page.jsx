@@ -14,7 +14,7 @@ export default function App() {
     } else if (userRole === "setter") {
       router.push("/setter");
     } else {
-      router.push("/contest");
+      router.push("/contests");
     }
   }, [router]);
 
