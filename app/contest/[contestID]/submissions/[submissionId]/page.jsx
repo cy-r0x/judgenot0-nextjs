@@ -4,7 +4,7 @@ import { SubmissionCodeViewer } from "./client";
 import Link from "next/link";
 
 export default async function SubmissionPage({ params }) {
-  const { submissionId, contestId } = params;
+  const { submissionId, contestId } = await params;
   const submissionData = await SubmissionIdModule.getSubmissionId(submissionId);
 
   return (

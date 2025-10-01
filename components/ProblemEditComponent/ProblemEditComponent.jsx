@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import BasicInfoTab from "./tabs/BasicInfoTab";
 import DescriptionTab from "./tabs/DescriptionTab";
 import TestCasesTab from "./tabs/TestCasesTab";
@@ -9,22 +10,84 @@ import SolutionsTab from "./tabs/SolutionsTab";
 import TestCaseModal from "./modals/TestCaseModal";
 import SolutionModal from "./modals/SolutionModal";
 import Button from "@/components/ButtonComponent/Button";
+import NotificationComponent from "@/components/NotificationComponent/NotificationComponent";
+import problemMoudle from "@/api/problem/problem";
 
-export default function ProblemEditComponent() {
+export default function ProblemEditComponent({ params }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
   const [problemData, setProblemData] = useState({
-    name: "",
-    author: "",
-    topic: "",
-    description: "",
-    inputDescription: "",
-    outputDescription: "",
-    sampleTestCases: [],
-    regularTestCases: [],
-    timeLimit: 1000, // ms
-    memoryLimit: 256, // MB
+    id: 0,
+    slug: "",
+    title: "",
+    statement: "",
+    input_statement: "",
+    output_statement: "",
+    time_limit: 1,
+    memory_limit: 256,
+    test_cases: [],
     solutions: [],
+    created_by: 0,
+    created_at: "",
   });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProblem = async () => {
+      try {
+        setLoading(true);
+
+        // Validate and parse params
+        if (!params?.value) {
+          throw new Error("No problem parameters provided");
+        }
+
+        let problemId;
+        try {
+          const parsed = JSON.parse(params.value);
+          problemId = parsed.problemId;
+        } catch (parseError) {
+          throw new Error("Invalid problem parameters format");
+        }
+
+        if (!problemId) {
+          throw new Error("Problem ID not found in parameters");
+        }
+
+        // Fetch problem data
+        const response = await problemMoudle.getProblem(problemId);
+
+        if (response.error) {
+          // Check if it's an authentication error
+          if (
+            response.error === "No access token found" ||
+            response.error === "Invalid or expired token"
+          ) {
+            // Redirect to login page
+            router.push("/login");
+            return;
+          }
+          throw new Error(response.error);
+        }
+
+        // Set the problem data (getProblem now handles test_cases normalization)
+        setProblemData(response);
+      } catch (error) {
+        console.error("Error fetching problem:", error);
+        showNotification(
+          error.message || "Failed to load problem data",
+          "error"
+        );
+
+        // Optionally redirect back or show error state
+        // You might want to redirect to problem list or show an error page
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProblem();
+  }, [params?.value]); // Added dependency to re-fetch if params change
 
   // Modal states
   const [showTestCaseModal, setShowTestCaseModal] = useState(false);
@@ -40,13 +103,27 @@ export default function ProblemEditComponent() {
   });
   const [editingIndex, setEditingIndex] = useState(-1); // -1 for new, >= 0 for editing existing
 
-  const tabs = [
-    "Basic Info",
-    "Problem Description",
-    "Test Cases",
-    "Limits",
-    "Solutions",
-  ];
+  // Notification states
+  const [notification, setNotification] = useState({
+    isVisible: false,
+    message: "",
+    type: "info",
+  });
+
+  const showNotification = (message, type = "info") => {
+    setNotification({
+      isVisible: true,
+      message,
+      type,
+    });
+  };
+
+  const hideNotification = () => {
+    setNotification((prev) => ({ ...prev, isVisible: false }));
+  };
+
+  //solution has not been implemented yet!
+  const tabs = ["Basic Info", "Problem Description", "Test Cases", "Limits"];
 
   const handleTabChange = (index) => {
     setActiveTab(index);
@@ -57,9 +134,23 @@ export default function ProblemEditComponent() {
     setProblemData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    console.log("Saving problem data:", problemData);
-    // Implement actual save logic here
+  const handleSave = async () => {
+    try {
+      const response = await problemMoudle.updateProblem(problemData);
+
+      if (response.error) {
+        // Handle API error response
+        showNotification(response.error, "error");
+      } else {
+        // Success - update local data with response and show success message
+        setProblemData(response);
+        showNotification("Problem updated successfully!", "success");
+      }
+    } catch (error) {
+      // Handle network or unexpected errors
+      console.error("Error saving problem:", error);
+      showNotification("Failed to save problem. Please try again.", "error");
+    }
   };
 
   return (
@@ -77,54 +168,72 @@ export default function ProblemEditComponent() {
                     ? "bg-orange-500 text-white font-medium"
                     : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
                 }`}
+                disabled={loading}
               >
                 {tab}
               </button>
             ))}
           </div>
           <div className="pr-6">
-            <Button name="Save Changes" onClick={handleSave} />
+            <Button
+              name={loading ? "Loading..." : "Save Changes"}
+              onClick={handleSave}
+              disabled={loading}
+            />
           </div>
         </div>
 
         {/* Tab Content */}
         <div className="p-6">
-          {activeTab === 0 && (
-            <BasicInfoTab
-              problemData={problemData}
-              handleInputChange={handleInputChange}
-            />
-          )}
-          {activeTab === 1 && (
-            <DescriptionTab
-              problemData={problemData}
-              setProblemData={setProblemData}
-            />
-          )}
-          {activeTab === 2 && (
-            <TestCasesTab
-              problemData={problemData}
-              setProblemData={setProblemData}
-              setShowTestCaseModal={setShowTestCaseModal}
-              setCurrentTestCaseType={setCurrentTestCaseType}
-              setCurrentTestCase={setCurrentTestCase}
-              setEditingIndex={setEditingIndex}
-            />
-          )}
-          {activeTab === 3 && (
-            <LimitsTab
-              problemData={problemData}
-              handleInputChange={handleInputChange}
-            />
-          )}
-          {activeTab === 4 && (
-            <SolutionsTab
-              problemData={problemData}
-              setProblemData={setProblemData}
-              setShowSolutionModal={setShowSolutionModal}
-              setCurrentSolution={setCurrentSolution}
-              setEditingIndex={setEditingIndex}
-            />
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="text-zinc-300 text-lg">
+                  Loading problem data...
+                </span>
+              </div>
+            </div>
+          ) : (
+            <>
+              {activeTab === 0 && (
+                <BasicInfoTab
+                  problemData={problemData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+              {activeTab === 1 && (
+                <DescriptionTab
+                  problemData={problemData}
+                  setProblemData={setProblemData}
+                />
+              )}
+              {activeTab === 2 && (
+                <TestCasesTab
+                  problemData={problemData}
+                  setProblemData={setProblemData}
+                  setShowTestCaseModal={setShowTestCaseModal}
+                  setCurrentTestCaseType={setCurrentTestCaseType}
+                  setCurrentTestCase={setCurrentTestCase}
+                  setEditingIndex={setEditingIndex}
+                />
+              )}
+              {activeTab === 3 && (
+                <LimitsTab
+                  problemData={problemData}
+                  handleInputChange={handleInputChange}
+                />
+              )}
+              {activeTab === 4 && (
+                <SolutionsTab
+                  problemData={problemData}
+                  setProblemData={setProblemData}
+                  setShowSolutionModal={setShowSolutionModal}
+                  setCurrentSolution={setCurrentSolution}
+                  setEditingIndex={setEditingIndex}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -154,6 +263,14 @@ export default function ProblemEditComponent() {
           editingIndex={editingIndex}
         />
       )}
+
+      {/* Notification Component */}
+      <NotificationComponent
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.isVisible}
+        onClose={hideNotification}
+      />
     </div>
   );
 }

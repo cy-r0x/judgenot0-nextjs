@@ -24,44 +24,43 @@ export default function TestCaseModal({
       return;
     }
 
-    const newTestCase = { input, output };
+    const newTestCase = {
+      input,
+      expected_output: output,
+      is_sample: testCaseType === "sample",
+    };
 
-    if (testCaseType === "sample") {
-      if (editingIndex === -1) {
-        // Add new test case
-        setProblemData((prev) => ({
-          ...prev,
-          sampleTestCases: [...prev.sampleTestCases, newTestCase],
-        }));
-      } else {
-        // Update existing test case
-        setProblemData((prev) => {
-          const updatedTestCases = [...prev.sampleTestCases];
-          updatedTestCases[editingIndex] = newTestCase;
-          return {
-            ...prev,
-            sampleTestCases: updatedTestCases,
-          };
-        });
-      }
+    if (editingIndex === -1) {
+      // Add new test case
+      setProblemData((prev) => ({
+        ...prev,
+        test_cases: [...prev.test_cases, newTestCase],
+      }));
     } else {
-      if (editingIndex === -1) {
-        // Add new test case
-        setProblemData((prev) => ({
+      // Update existing test case
+      setProblemData((prev) => {
+        const filteredTestCases = prev.test_cases.filter((tc) =>
+          testCaseType === "sample" ? tc.is_sample : !tc.is_sample
+        );
+        const targetTestCase = filteredTestCases[editingIndex];
+
+        // Find the actual index in the original array
+        const actualIndex = prev.test_cases.findIndex(
+          (tc) =>
+            tc.input === targetTestCase.input &&
+            tc.expected_output === targetTestCase.expected_output &&
+            tc.is_sample === targetTestCase.is_sample
+        );
+
+        const updatedTestCases = prev.test_cases.map((tc, index) =>
+          index === actualIndex ? { ...tc, input, expected_output: output } : tc
+        );
+
+        return {
           ...prev,
-          regularTestCases: [...prev.regularTestCases, newTestCase],
-        }));
-      } else {
-        // Update existing test case
-        setProblemData((prev) => {
-          const updatedTestCases = [...prev.regularTestCases];
-          updatedTestCases[editingIndex] = newTestCase;
-          return {
-            ...prev,
-            regularTestCases: updatedTestCases,
-          };
-        });
-      }
+          test_cases: updatedTestCases,
+        };
+      });
     }
 
     onClose();

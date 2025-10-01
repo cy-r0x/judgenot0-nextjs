@@ -9,55 +9,56 @@ export default function BasicInfoTab({ problemData, handleInputChange }) {
       <div className="grid grid-cols-1 gap-6">
         <div>
           <label
-            htmlFor="name"
+            htmlFor="title"
             className="block text-sm font-medium text-zinc-300 mb-1"
           >
-            Problem Name
+            Problem Title
           </label>
           <input
             type="text"
-            id="name"
-            name="name"
-            value={problemData.name}
+            id="title"
+            name="title"
+            value={problemData.title}
             onChange={handleInputChange}
             className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-            placeholder="Enter a descriptive problem name"
+            placeholder="Enter a descriptive problem title"
           />
         </div>
 
         <div>
           <label
-            htmlFor="author"
+            htmlFor="slug"
             className="block text-sm font-medium text-zinc-300 mb-1"
           >
-            Author
+            Problem Slug
           </label>
           <input
             type="text"
-            id="author"
-            name="author"
-            value={problemData.author}
+            id="slug"
+            name="slug"
+            value={problemData.slug}
             onChange={handleInputChange}
             className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-            placeholder="Author name"
+            placeholder="problem-slug-format"
           />
         </div>
 
         <div>
           <label
-            htmlFor="topic"
+            htmlFor="id"
             className="block text-sm font-medium text-zinc-300 mb-1"
           >
-            Topic/Tags
+            Problem ID
           </label>
           <input
-            type="text"
-            id="topic"
-            name="topic"
-            value={problemData.topic}
+            type="number"
+            id="id"
+            name="id"
+            value={problemData.id}
             onChange={handleInputChange}
             className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-            placeholder="e.g. Dynamic Programming, Graphs, Strings (comma separated)"
+            placeholder="Problem ID"
+            disabled
           />
         </div>
       </div>

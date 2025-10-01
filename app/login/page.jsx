@@ -4,13 +4,17 @@ import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Button from "@/components/ButtonComponent/Button";
 import Bar from "@/components/BarComponent/BarComponent";
 import { useRouter } from "next/navigation";
+import userMoudle from "@/api/user/user";
 
 export default () => {
   const [formData, setFormData] = useState({
-    userId: "",
+    username: "",
     password: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -19,11 +23,19 @@ export default () => {
       ...prev,
       [name]: value,
     }));
+    // Clear error when user starts typing
+    if (error) {
+      setError("");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted with:", formData);
+    setIsLoading(true);
+    const response = userMoudle.Login(formData.username, formData.password);
+    if (response.error) {
+      return;
+    }
     router.push("/");
   };
 
@@ -33,18 +45,23 @@ export default () => {
         <div className="space-y-2">
           <Bar title={"Login"} center={true} />
           <div className="bg-zinc-800 inline-flex flex-col justify-center items-center p-10">
+            {error && (
+              <div className="mb-4 p-3 bg-red-500 text-white rounded text-center text-sm">
+                {error}
+              </div>
+            )}
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
               <div className="flex gap-4 items-center">
-                <label htmlFor="userId">
+                <label htmlFor="username">
                   <FaUser size={24} className="text-zinc-400" />
                 </label>
                 <input
                   type="text"
-                  name="userId"
-                  id="userId"
-                  value={formData.userId}
+                  name="username"
+                  id="username"
+                  value={formData.username}
                   onChange={handleChange}
-                  placeholder="User ID"
+                  placeholder="Username"
                   className="border-2 border-zinc-700 bg-zinc-900 text-center p-2 rounded w-72 outline-none focus:border-orange-500"
                 />
               </div>
@@ -77,7 +94,10 @@ export default () => {
                 </div>
               </div>
 
-              <Button name={"Login"} />
+              <Button
+                name={isLoading ? "Logging in..." : "Login"}
+                disabled={isLoading}
+              />
             </form>
           </div>
         </div>

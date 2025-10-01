@@ -1,14 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdCreate, MdList } from "react-icons/md";
 import Button from "@/components/ButtonComponent/Button";
 import CreateProblem from "@/components/CreateProblemComponent/CreateProblemComponent";
+import setterModule from "@/api/setter/setter";
 
-function setterPanel() {
+function SetterPanel() {
+  const [problemList, setProblemList] = useState([]);
   const [activeItem, setActiveItem] = useState(0);
   const [modalActive, setModalActive] = useState(false);
+
+  useEffect(() => {
+    const fetchProblem = async () => {
+      const data = await setterModule.getProblems();
+      if (data.error) {
+        console.log(data.error);
+        return;
+      }
+      setProblemList(data);
+      console.log(data);
+    };
+    fetchProblem();
+  }, []);
 
   const handleCreate = () => {
     setModalActive(true);
@@ -20,12 +35,6 @@ function setterPanel() {
       href: "#problems",
       icon: <MdList className="text-xl" />,
     },
-  ];
-
-  const problemData = [
-    { title: "Two Sum" },
-    { title: "Binary Search Tree" },
-    { title: "Graph Traversal" },
   ];
 
   return (
@@ -116,7 +125,7 @@ function setterPanel() {
               </div>
             </div>
 
-            {problemData.length > 0 ? (
+            {problemList.length > 0 ? (
               <div className="bg-zinc-800/70 rounded-lg overflow-hidden shadow-lg border border-zinc-700/50">
                 <table className="min-w-full divide-y divide-zinc-700">
                   <thead className="bg-zinc-700/50">
@@ -142,7 +151,7 @@ function setterPanel() {
                     </tr>
                   </thead>
                   <tbody className="bg-zinc-800/30 divide-y divide-zinc-700/50">
-                    {problemData.map((problem, index) => (
+                    {problemList.map((problem, index) => (
                       <tr
                         key={index}
                         className="hover:bg-zinc-700/30 transition-colors"
@@ -155,12 +164,11 @@ function setterPanel() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
                           <div className="flex space-x-3">
-                            <button className="text-blue-400 hover:text-blue-300 transition-colors">
-                              Edit
-                            </button>
-                            <button className="text-red-400 hover:text-red-300 transition-colors">
-                              Delete
-                            </button>
+                            <Link href={`/edit/problem/${problem.id}`}>
+                              <button className="text-blue-400 hover:text-blue-300 transition-colors hover:cursor-pointer">
+                                Edit
+                              </button>
+                            </Link>
                           </div>
                         </td>
                       </tr>
@@ -183,4 +191,4 @@ function setterPanel() {
   );
 }
 
-export default setterPanel;
+export default SetterPanel;

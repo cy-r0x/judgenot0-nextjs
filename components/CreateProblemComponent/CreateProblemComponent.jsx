@@ -1,11 +1,14 @@
 "use client";
 import Button from "../ButtonComponent/Button";
 import { useState } from "react";
+import setterModule from "@/api/setter/setter";
+import { useRouter } from "next/navigation";
 
 function CreateProblem({ setModalActive }) {
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e) => {
     setTitle(e.target.value);
@@ -19,25 +22,14 @@ function CreateProblem({ setModalActive }) {
       setError("Problem title is required");
       return;
     }
-
     setIsSubmitting(true);
-
-    try {
-      console.log("Creating problem with title:", title);
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      alert(
-        "Problem created successfully! You'll be redirected to add more details."
-      );
-      setTitle("");
-      setModalActive(false);
-    } catch (error) {
-      console.error("Error creating problem:", error);
-      alert("Failed to create problem. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+    const response = await setterModule.createProlem(title);
+    if (response.error) {
+      router.push("/login");
+      return;
     }
+    setIsSubmitting(false);
+    router.push(`/edit/problem/${response.id}`);
   };
 
   return (

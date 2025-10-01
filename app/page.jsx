@@ -1,30 +1,22 @@
-import contestDataModule from "@/utils/fetchContest";
-import ContestListComponent from "@/components/ContestListComponent/ContestListComponent";
-import Bar from "@/components/BarComponent/BarComponent";
-import Link from "next/link";
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import userMoudle from "@/api/user/user";
 
-async function Contest() {
-  const currentContests = await contestDataModule.getData();
+export default function App() {
+  const router = useRouter();
 
-  return (
-    <>
-      <div className="mx-8 my-4">
-        <Bar title={"Contest"}></Bar>
+  useEffect(() => {
+    const userRole = userMoudle.getUserRole();
+    console.log(userRole);
+    if (userRole === "admin") {
+      router.push("/admin");
+    } else if (userRole === "setter") {
+      router.push("/setter");
+    } else {
+      router.push("/contest");
+    }
+  }, [router]);
 
-        {/* Display Contests */}
-        <div className="flex flex-col gap-2 my-4">
-          {currentContests.length > 0 &&
-            currentContests.map((data, index) => (
-              <Link href={`/contest/${index + 1}`} key={index}>
-                <div key={index}>
-                  <ContestListComponent data={data} />
-                </div>
-              </Link>
-            ))}
-        </div>
-      </div>
-    </>
-  );
+  return null;
 }
-
-export default Contest;

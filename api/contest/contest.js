@@ -1,8 +1,7 @@
 import axios from "axios";
+const contestModule = {};
 
-const contestDataModule = {};
-
-contestDataModule.getData = async () => {
+contestModule.getContest = async () => {
   try {
     const response = await axios.get("http://localhost:8000/api/contests");
     return response.data;
@@ -12,4 +11,4 @@ contestDataModule.getData = async () => {
   }
 };
 
-export default contestDataModule;
+export default contestModule;

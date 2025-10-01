@@ -38,8 +38,8 @@ export default function DescriptionTab({ problemData, setProblemData }) {
             $...$ for inline and $$...$$ for block math.
           </p>
           <TipTapWrapper
-            field="description"
-            initialContent={problemData.description}
+            field="statement"
+            initialContent={problemData.statement}
             setProblemData={setProblemData}
           />
         </div>
@@ -52,8 +52,8 @@ export default function DescriptionTab({ problemData, setProblemData }) {
             Describe the input format in detail.
           </p>
           <TipTapWrapper
-            field="inputDescription"
-            initialContent={problemData.inputDescription}
+            field="input_statement"
+            initialContent={problemData.input_statement}
             setProblemData={setProblemData}
           />
         </div>
@@ -66,8 +66,8 @@ export default function DescriptionTab({ problemData, setProblemData }) {
             Describe the expected output format in detail.
           </p>
           <TipTapWrapper
-            field="outputDescription"
-            initialContent={problemData.outputDescription}
+            field="output_statement"
+            initialContent={problemData.output_statement}
             setProblemData={setProblemData}
           />
         </div>
