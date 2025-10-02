@@ -56,23 +56,25 @@ export default function ContestEditComponent({ contestId }) {
         }
 
         // Fetch contest data
-        const response = await contestModule.getContest(contestId);
+        const { data, error } = await contestModule.getContest(contestId);
 
-        if (response.error) {
+        if (error) {
           // Check if it's an authentication error
           if (
-            response.error === "No access token found" ||
-            response.error === "Invalid or expired token"
+            error === "No access token found" ||
+            error === "Invalid or expired token"
           ) {
             // Redirect to login page
             router.push("/login");
             return;
           }
-          throw new Error(response.error);
+          throw new Error(error);
         }
 
         // Set the contest data
-        setContestData(response);
+        if (data) {
+          setContestData(data);
+        }
       } catch (error) {
         console.error("Error fetching contest:", error);
         showNotification(
@@ -102,12 +104,14 @@ export default function ContestEditComponent({ contestId }) {
         start_time: new Date(contestData.contest.start_time).toISOString(),
       };
 
-      const response = await contestModule.updateContest(contestToUpdate);
+      const { data, error } = await contestModule.updateContest(
+        contestToUpdate
+      );
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
-        setContestData((prev) => ({ ...prev, contest: response }));
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
+        setContestData((prev) => ({ ...prev, contest: data }));
         showNotification("Contest updated successfully!", "success");
       }
     } catch (error) {

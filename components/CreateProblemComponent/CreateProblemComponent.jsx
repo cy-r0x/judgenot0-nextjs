@@ -23,13 +23,16 @@ function CreateProblem({ setModalActive }) {
       return;
     }
     setIsSubmitting(true);
-    const response = await setterModule.createProlem(title);
-    if (response.error) {
-      router.push("/login");
+    const { data, error } = await setterModule.createProblem(title);
+    if (error) {
+      setError(error);
+      setIsSubmitting(false);
       return;
     }
+    if (data && data.id) {
+      router.push(`/edit/problem/${data.id}`);
+    }
     setIsSubmitting(false);
-    router.push(`/edit/problem/${response.id}`);
   };
 
   return (

@@ -1,17 +1,80 @@
-// Server component
-import SubmissionIdModule from "@/utils/fetchSubmissionId";
+"use client";
+
+import { useState, useEffect } from "react";
 import { SubmissionCodeViewer } from "./client";
 import Link from "next/link";
+import submissionModule from "@/api/submission/submission";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import PageLoading from "@/components/LoadingSpinner/PageLoading";
+import { formatFullDate } from "@/utils/dateFormatter";
 
-export default async function SubmissionPage({ params }) {
-  const { submissionId, contestId } = await params;
-  const submissionData = await SubmissionIdModule.getSubmissionId(submissionId);
+export default function SubmissionPage({ params }) {
+  const [contestId, setContestId] = useState(null);
+  const [submissionId, setSubmissionId] = useState(null);
+  const [submissionData, setSubmissionData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Unwrap params
+    Promise.resolve(params).then(({ contestId, submissionId }) => {
+      setContestId(contestId);
+      setSubmissionId(submissionId);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!submissionId) return;
+
+    const fetchSubmission = async () => {
+      setLoading(true);
+      const { data, error } = await submissionModule.getSubmission(
+        submissionId
+      );
+
+      if (error) {
+        setError(error);
+      } else {
+        setSubmissionData(data);
+      }
+      setLoading(false);
+    };
+
+    fetchSubmission();
+  }, [submissionId]);
+
+  if (!contestId || !submissionId || loading) {
+    return <PageLoading text="Loading submission..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="px-6 md:px-16 py-6">
+        <ErrorMessage message={error} type="error" fullWidth={true} />
+      </div>
+    );
+  }
+
+  if (!submissionData) {
+    return (
+      <div className="px-6 md:px-16 py-6">
+        <ErrorMessage
+          message="Submission not found"
+          type="error"
+          fullWidth={true}
+        />
+      </div>
+    );
+  }
+
+  // Format the submitted date using utility
+  const formattedDate = formatFullDate(submissionData.submitted_at);
 
   return (
     <div className="px-6 md:px-16 py-6">
       <Link
-        href={`/contest/${contestId}`}
-        className="inline-flex items-center text-orange-500 hover:text-orange-600 transition-colors"
+        href={`/contests/${contestId}/${submissionData.problem_id}`}
+        className="inline-flex items-center text-orange-500 hover:text-orange-600 transition-colors mb-4"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -27,7 +90,7 @@ export default async function SubmissionPage({ params }) {
         >
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
-        Back to Problems
+        Back to Problem
       </Link>
       <h2 className="text-2xl font-bold mb-6">Submission Details</h2>
 
@@ -35,41 +98,57 @@ export default async function SubmissionPage({ params }) {
         <div className="bg-zinc-800 p-4 rounded-lg">
           <div className="text-zinc-400 text-sm">Submission ID</div>
           <div className="font-mono text-lg text-orange-500">
-            {submissionData.submissionID}
+            #{submissionData.id}
           </div>
         </div>
 
         <div className="bg-zinc-800 p-4 rounded-lg">
-          <div className="text-zinc-400 text-sm">Status</div>
+          <div className="text-zinc-400 text-sm">Verdict</div>
           <div
             className={`font-medium text-lg ${
-              submissionData.status === "Accepted"
+              submissionData.verdict === "Accepted"
                 ? "text-green-500"
-                : submissionData.status === "Wrong Answer"
+                : submissionData.verdict === "Wrong Answer"
                 ? "text-red-500"
-                : submissionData.status === "In Queue"
-                ? "text-blue-500"
-                : submissionData.status === "Judging"
+                : submissionData.verdict === "Pending"
                 ? "text-yellow-500"
+                : submissionData.verdict === "Running"
+                ? "text-blue-500"
                 : "text-gray-500"
             }`}
           >
-            {submissionData.status}
+            {submissionData.verdict}
           </div>
         </div>
 
         <div className="bg-zinc-800 p-4 rounded-lg">
-          <div className="text-zinc-400 text-sm">Time</div>
+          <div className="text-zinc-400 text-sm">Execution Time</div>
           <div className="font-medium text-lg">
-            {submissionData.time ? `${submissionData.time} ms` : "—"}
+            {submissionData.execution_time
+              ? `${submissionData.execution_time} ms`
+              : "—"}
           </div>
         </div>
 
         <div className="bg-zinc-800 p-4 rounded-lg">
-          <div className="text-zinc-400 text-sm">Memory</div>
+          <div className="text-zinc-400 text-sm">Memory Used</div>
           <div className="font-medium text-lg">
-            {submissionData.memory ? `${submissionData.memory} KB` : "—"}
+            {submissionData.memory_used
+              ? `${submissionData.memory_used} KB`
+              : "—"}
           </div>
+        </div>
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-zinc-800 p-4 rounded-lg">
+          <div className="text-zinc-400 text-sm">Username</div>
+          <div className="font-medium text-lg">{submissionData.username}</div>
+        </div>
+
+        <div className="bg-zinc-800 p-4 rounded-lg">
+          <div className="text-zinc-400 text-sm">Submitted At</div>
+          <div className="font-medium text-lg">{formattedDate}</div>
         </div>
       </div>
 
@@ -92,7 +171,7 @@ export default async function SubmissionPage({ params }) {
 
         <div className="border-2 border-zinc-800 rounded-lg overflow-hidden">
           <SubmissionCodeViewer
-            code={submissionData.code}
+            code={submissionData.source_code}
             language={submissionData.language}
           />
         </div>

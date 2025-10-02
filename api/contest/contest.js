@@ -1,50 +1,49 @@
-import axios from "axios";
-import userModule from "../user/user";
+/**
+ * Contest API Module
+ * Handles all contest-related API calls
+ */
+import apiClient from "@/utils/apiClient";
+import { handleApiError } from "@/utils/errorHandler";
+import { API_ENDPOINTS } from "@/utils/constants";
 
 const contestModule = {};
 
+/**
+ * Get all contests
+ * @returns {Promise<{data?: Array, error?: string}>}
+ */
 contestModule.getContests = async () => {
   try {
-    const response = await axios.get("http://localhost:8000/api/contests");
+    const response = await apiClient.get(API_ENDPOINTS.CONTESTS);
+    const contests = response.data;
 
-    if (response.status === 200) {
-      const contests = response.data;
-
-      // Ensure contests is always an array
-      if (!Array.isArray(contests)) {
-        return [];
-      }
-
-      return contests;
-    } else {
-      return { error: `Unexpected response status: ${response.status}` };
+    // Ensure contests is always an array
+    if (!Array.isArray(contests)) {
+      return { data: [] };
     }
+
+    return { data: contests };
   } catch (error) {
-    console.error("Error fetching contests:", error);
+    const handledError = handleApiError(error, {
+      context: "Get Contests",
+    });
 
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Access denied" };
-        case 500:
-          return { error: "Server error occurred" };
-        default:
-          return {
-            error:
-              error.response.data?.message ||
-              `Server error: ${error.response.status}`,
-          };
-      }
-    } else if (error.request) {
-      return { error: "Network error - unable to connect to server" };
-    } else {
-      return { error: "An unexpected error occurred" };
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+
+    return { error: handledError.error };
   }
 };
 
+/**
+ * Get contest by ID
+ * @param {number|string} contestId - Contest ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
 contestModule.getContest = async (contestId) => {
   // Input validation
   if (!contestId) {
@@ -57,138 +56,106 @@ contestModule.getContest = async (contestId) => {
   }
 
   try {
-    const response = await axios.get(
-      `http://localhost:8000/api/contests/${numericId}`
+    const response = await apiClient.get(
+      API_ENDPOINTS.CONTEST_BY_ID(numericId)
     );
+    const contestData = response.data;
 
-    if (response.status === 200) {
-      const contestData = response.data;
-
-      // Ensure numeric fields are properly typed
-      if (contestData.contest?.id) {
-        contestData.contest.id = parseInt(contestData.contest.id);
-      }
-      if (contestData.contest?.duration_seconds) {
-        contestData.contest.duration_seconds = parseInt(
-          contestData.contest.duration_seconds
-        );
-      }
-
-      return contestData;
-    } else {
-      return { error: `Unexpected response status: ${response.status}` };
+    // Ensure numeric fields are properly typed
+    if (contestData.contest?.id) {
+      contestData.contest.id = parseInt(contestData.contest.id);
     }
+    if (contestData.contest?.duration_seconds) {
+      contestData.contest.duration_seconds = parseInt(
+        contestData.contest.duration_seconds
+      );
+    }
+
+    return { data: contestData };
   } catch (error) {
-    console.error("Error fetching contest:", error);
+    const handledError = handleApiError(error, {
+      context: "Get Contest",
+      contestId,
+    });
 
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Access denied" };
-        case 404:
-          return { error: "Contest not found" };
-        case 500:
-          return { error: "Server error occurred" };
-        default:
-          return {
-            error:
-              error.response.data?.message ||
-              `Server error: ${error.response.status}`,
-          };
-      }
-    } else if (error.request) {
-      return { error: "Network error - unable to connect to server" };
-    } else {
-      return { error: "An unexpected error occurred" };
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+    if (error.status === 404) {
+      return { error: "Contest not found" };
+    }
+
+    return { error: handledError.error };
   }
 };
 
+/**
+ * Create new contest (Admin only)
+ * @param {Object} contestData - Contest data
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
 contestModule.createContest = async (contestData) => {
-  const access_token = userModule.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   try {
-    const response = await axios.post(
-      "http://localhost:8000/api/contests",
-      {
-        title: contestData.title,
-        description: contestData.description || "",
-        start_time: contestData.start_time,
-        duration_seconds: parseInt(contestData.duration_seconds),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
+    const response = await apiClient.post(API_ENDPOINTS.CONTESTS, {
+      title: contestData.title,
+      description: contestData.description || "",
+      start_time: contestData.start_time,
+      duration_seconds: parseInt(contestData.duration_seconds),
+    });
 
-    if (response.status === 201 || response.status === 200) {
-      return response.data;
-    } else {
-      return { error: "Failed to create contest" };
-    }
+    return { data: response.data };
   } catch (error) {
-    console.error("Error creating contest:", error);
-    if (error.response?.status === 401) {
-      return { error: "Invalid Token" };
+    const handledError = handleApiError(error, {
+      context: "Create Contest",
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
-    return {
-      error: error.response?.data?.message || "Failed to create contest",
-    };
+
+    return { error: handledError.error };
   }
 };
 
+/**
+ * Update contest (Admin only)
+ * @param {Object} contest - Contest data with ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
 contestModule.updateContest = async (contest) => {
-  const access_token = userModule.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   try {
-    const response = await axios.put(
-      `http://localhost:8000/api/contests`,
-      {
-        id: contest.id,
-        title: contest.title,
-        description: contest.description,
-        start_time: contest.start_time,
-        duration_seconds: parseInt(contest.duration_seconds),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
+    const response = await apiClient.put(API_ENDPOINTS.CONTESTS, {
+      id: contest.id,
+      title: contest.title,
+      description: contest.description,
+      start_time: contest.start_time,
+      duration_seconds: parseInt(contest.duration_seconds),
+    });
 
-    if (response.status === 200) {
-      return response.data;
-    } else {
-      return { error: "Failed to update contest" };
-    }
+    return { data: response.data };
   } catch (error) {
-    console.error("Error updating contest:", error);
-    if (error.response?.status === 401) {
-      return { error: "Invalid Token" };
+    const handledError = handleApiError(error, {
+      context: "Update Contest",
+      contestId: contest.id,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
-    return {
-      error: error.response?.data?.message || "Failed to update contest",
-    };
+
+    return { error: handledError.error };
   }
 };
 
+/**
+ * Assign problem to contest
+ * @param {Object} contestProblem - Contest problem assignment data
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
 contestModule.assignProblem = async (contestProblem) => {
-  const access_token = userModule.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   // Input validation
   if (!contestProblem || typeof contestProblem !== "object") {
     return { error: "Contest problem data is required" };
@@ -199,68 +166,46 @@ contestModule.assignProblem = async (contestProblem) => {
   }
 
   try {
-    const response = await axios.post(
-      "http://localhost:8000/api/contests/assign",
-      {
-        contest_id: parseInt(contestProblem.contest_id),
-        problem_id: parseInt(contestProblem.problem_id),
-        index: contestProblem.index
-          ? parseInt(contestProblem.index)
-          : undefined,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await apiClient.post(API_ENDPOINTS.CONTEST_ASSIGN, {
+      contest_id: parseInt(contestProblem.contest_id),
+      problem_id: parseInt(contestProblem.problem_id),
+      index: contestProblem.index ? parseInt(contestProblem.index) : undefined,
+    });
 
-    if (response.status === 201 || response.status === 200) {
-      return response.data;
-    } else {
-      return { error: "Failed to assign problem to contest" };
-    }
+    return { data: response.data };
   } catch (error) {
-    console.error("Error assigning problem:", error);
+    const handledError = handleApiError(error, {
+      context: "Assign Problem to Contest",
+      contestId: contestProblem.contest_id,
+      problemId: contestProblem.problem_id,
+    });
 
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Access denied" };
-        case 404:
-          return { error: "Contest or problem not found" };
-        case 409:
-          return { error: "Problem already assigned to this contest" };
-        case 422:
-          return {
-            error: error.response.data?.message || "Invalid data provided",
-          };
-        case 500:
-          return { error: "Server error occurred" };
-        default:
-          return {
-            error:
-              error.response.data?.message ||
-              `Server error: ${error.response.status}`,
-          };
-      }
-    } else if (error.request) {
-      return { error: "Network error - unable to connect to server" };
-    } else {
-      return { error: "An unexpected error occurred" };
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+    if (error.status === 404) {
+      return { error: "Contest or problem not found" };
+    }
+    if (error.status === 409) {
+      return { error: "Problem already assigned to this contest" };
+    }
+    if (error.status === 422) {
+      return { error: "Invalid data provided" };
+    }
+
+    return { error: handledError.error };
   }
 };
 
+/**
+ * Get problems for a contest
+ * @param {number|string} contestId - Contest ID
+ * @returns {Promise<{data?: Array, error?: string}>}
+ */
 contestModule.getContestProblems = async (contestId) => {
-  const access_token = userModule.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   // Input validation
   if (!contestId) {
     return { error: "Contest ID is required" };
@@ -272,52 +217,34 @@ contestModule.getContestProblems = async (contestId) => {
   }
 
   try {
-    const response = await axios.get(
-      `http://localhost:8000/api/contests/problems/${numericId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
+    const response = await apiClient.get(
+      API_ENDPOINTS.CONTEST_PROBLEMS(numericId)
     );
+    const problems = response.data;
 
-    if (response.status === 200) {
-      const problems = response.data;
-
-      // Ensure problems is always an array
-      if (!Array.isArray(problems)) {
-        return [];
-      }
-
-      return problems;
-    } else {
-      return { error: `Unexpected response status: ${response.status}` };
+    // Ensure problems is always an array
+    if (!Array.isArray(problems)) {
+      return { data: [] };
     }
+
+    return { data: problems };
   } catch (error) {
-    console.error("Error fetching contest problems:", error);
+    const handledError = handleApiError(error, {
+      context: "Get Contest Problems",
+      contestId,
+    });
 
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Access denied" };
-        case 404:
-          return { error: "Contest not found" };
-        case 500:
-          return { error: "Server error occurred" };
-        default:
-          return {
-            error:
-              error.response.data?.message ||
-              `Server error: ${error.response.status}`,
-          };
-      }
-    } else if (error.request) {
-      return { error: "Network error - unable to connect to server" };
-    } else {
-      return { error: "An unexpected error occurred" };
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+    if (error.status === 404) {
+      return { error: "Contest not found" };
+    }
+
+    return { error: handledError.error };
   }
 };
 

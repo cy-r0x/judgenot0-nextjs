@@ -2,13 +2,34 @@ import contestModule from "@/api/contest/contest";
 import Bar from "@/components/BarComponent/BarComponent";
 import ContestListComponent from "@/components/ContestListComponent/ContestListComponent";
 import Link from "next/link";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 async function Contest() {
-  const contests = await contestModule.getContests();
+  const response = await contestModule.getContests();
+
+  // Handle error case
+  if (response.error) {
+    return (
+      <div className="mx-8 my-4">
+        <Bar title={"Contests"} />
+        <div className="mt-6">
+          <ErrorMessage
+            message={response.error}
+            type="error"
+            fullWidth={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const contests = response.data || [];
+
   return (
     <>
       <div className="mx-8 my-4">
-        <Bar title={"Contest"}></Bar>
+        <Bar title={"Contests"}></Bar>
         <div className="flex flex-col gap-2 my-4">
           {contests.length > 0 ? (
             contests.map((contest) => (
@@ -19,12 +40,10 @@ async function Contest() {
               </Link>
             ))
           ) : (
-            <div className="text-center py-12">
-              <p className="text-zinc-400 text-lg">No contests available</p>
-              <p className="text-zinc-500 text-sm mt-2">
-                Check back later for upcoming contests
-              </p>
-            </div>
+            <EmptyState
+              title="No Contests Available"
+              description="Check back later for upcoming contests"
+            />
           )}
         </div>
       </div>

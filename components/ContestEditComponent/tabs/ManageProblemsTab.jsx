@@ -31,14 +31,14 @@ export default function ManageProblemsTab({
   const fetchContestProblems = async () => {
     try {
       setLoading(true);
-      const response = await contestModule.getContestProblems(
+      const { data, error } = await contestModule.getContestProblems(
         contestData.contest.id
       );
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
-        setContestProblems(Array.isArray(response) ? response : []);
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
+        setContestProblems(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error("Error fetching contest problems:", error);
@@ -77,11 +77,11 @@ export default function ManageProblemsTab({
         problem_id: problemId,
       };
 
-      const response = await contestModule.assignProblem(contestProblem);
+      const { data, error } = await contestModule.assignProblem(contestProblem);
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
         setNewProblem({ problemId: "" });
         setShowAddProblem(false);
         showNotification("Problem assigned successfully!", "success");

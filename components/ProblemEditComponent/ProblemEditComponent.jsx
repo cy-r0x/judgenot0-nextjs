@@ -13,7 +13,7 @@ import Button from "@/components/ButtonComponent/Button";
 import NotificationComponent from "@/components/NotificationComponent/NotificationComponent";
 import problemMoudle from "@/api/problem/problem";
 
-export default function ProblemEditComponent({ params }) {
+export default function ProblemEditComponent({ problemId }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
   const [problemData, setProblemData] = useState({
@@ -37,41 +37,31 @@ export default function ProblemEditComponent({ params }) {
       try {
         setLoading(true);
 
-        // Validate and parse params
-        if (!params?.value) {
-          throw new Error("No problem parameters provided");
-        }
-
-        let problemId;
-        try {
-          const parsed = JSON.parse(params.value);
-          problemId = parsed.problemId;
-        } catch (parseError) {
-          throw new Error("Invalid problem parameters format");
-        }
-
+        // Validate problemId
         if (!problemId) {
-          throw new Error("Problem ID not found in parameters");
+          throw new Error("No problem ID provided");
         }
 
         // Fetch problem data
-        const response = await problemMoudle.getProblem(problemId);
+        const { data, error } = await problemMoudle.getProblem(problemId);
 
-        if (response.error) {
+        if (error) {
           // Check if it's an authentication error
           if (
-            response.error === "No access token found" ||
-            response.error === "Invalid or expired token"
+            error === "No access token found" ||
+            error === "Invalid or expired token"
           ) {
             // Redirect to login page
             router.push("/login");
             return;
           }
-          throw new Error(response.error);
+          throw new Error(error);
         }
 
         // Set the problem data (getProblem now handles test_cases normalization)
-        setProblemData(response);
+        if (data) {
+          setProblemData(data);
+        }
       } catch (error) {
         console.error("Error fetching problem:", error);
         showNotification(
@@ -87,7 +77,7 @@ export default function ProblemEditComponent({ params }) {
     };
 
     fetchProblem();
-  }, [params?.value]); // Added dependency to re-fetch if params change
+  }, [problemId]); // Added dependency to re-fetch if problemId changes
 
   // Modal states
   const [showTestCaseModal, setShowTestCaseModal] = useState(false);
@@ -136,14 +126,14 @@ export default function ProblemEditComponent({ params }) {
 
   const handleSave = async () => {
     try {
-      const response = await problemMoudle.updateProblem(problemData);
+      const { data, error } = await problemMoudle.updateProblem(problemData);
 
-      if (response.error) {
+      if (error) {
         // Handle API error response
-        showNotification(response.error, "error");
-      } else {
+        showNotification(error, "error");
+      } else if (data) {
         // Success - update local data with response and show success message
-        setProblemData(response);
+        setProblemData(data);
         showNotification("Problem updated successfully!", "success");
       }
     } catch (error) {

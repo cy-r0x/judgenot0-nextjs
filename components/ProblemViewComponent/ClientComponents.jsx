@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import CodeEditor from "@/components/EditorComponent/EditorComponent";
 import Button from "@/components/ButtonComponent/Button";
 import submissionModule from "@/api/submission/submission";
+import { useRouter } from "next/navigation";
 
 // Client-side component for copying text to clipboard
 export function CopyButton({ text }) {
@@ -28,66 +29,32 @@ export function CopyButton({ text }) {
   );
 }
 
-// Banner component for displaying submission results
-function ResultBanner({ result, visible, onClose }) {
-  const isAccepted = result === "Accepted";
-
-  return (
-    <div
-      className={`fixed top-5 right-5 p-4 rounded-md shadow-md transition-opacity duration-500 ${
-        visible ? "opacity-100" : "opacity-0 pointer-events-none"
-      } ${isAccepted ? "bg-green-600" : "bg-red-600"} text-white font-semibold`}
-    >
-      <div className="flex items-center justify-between">
-        <span>{result}</span>
-        <button
-          onClick={onClose}
-          className="ml-4 text-white hover:text-gray-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // Client-side component for the editor section
 export function EditorSection({ problemData, contestId }) {
   const [code, setCode] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [resultBanner, setResultBanner] = useState({
+  const [feedback, setFeedback] = useState({
     visible: false,
-    result: "",
+    message: "",
   });
+
+  const router = useRouter();
 
   // Effect to hide the banner after 5 seconds
   useEffect(() => {
     let timer;
-    if (resultBanner.visible) {
+    if (feedback.visible) {
       timer = setTimeout(() => {
-        setResultBanner((prev) => ({ ...prev, visible: false }));
+        setFeedback((prev) => ({ ...prev, visible: false }));
       }, 2000);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [resultBanner.visible]);
+  }, [feedback.visible]);
 
   const handleCompileRun = () => {
     console.log("Compile and Run - Problem Data:", problemData);
@@ -95,23 +62,52 @@ export function EditorSection({ problemData, contestId }) {
   };
 
   const handleSubmit = async () => {
-    const requestData = {
+    if (!code.trim()) {
+      setFeedback({
+        visible: true,
+        message: "Source code cannot be empty",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback((prev) => ({ ...prev, visible: false }));
+
+    const activeContestId = contestId ?? problemData.contest_id;
+
+    const { data, error } = await submissionModule.submitSubmission({
       problem_id: problemData.id,
-      contest_id: contestId,
+      contest_id: activeContestId,
       source_code: code,
       language: selectedLanguage,
-    };
-    console.log(requestData);
-    const response = await submissionModule.submitSubmission(requestData);
-    console.log(response);
+    });
+
+    if (error) {
+      setFeedback({
+        visible: true,
+        message: error,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    const submissionId =
+      data?.submission_id || data?.id || data?.submission?.id;
+
+    if (!submissionId) {
+      setFeedback({
+        visible: true,
+        message: "Submission succeeded but no submission ID returned",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    router.push(`/contests/${activeContestId}/submissions/${submissionId}`);
   };
 
   const handleLanguageChange = (e) => {
     setSelectedLanguage(e.target.value);
-  };
-
-  const closeBanner = () => {
-    setResultBanner((prev) => ({ ...prev, visible: false }));
   };
 
   return (
@@ -164,11 +160,11 @@ export function EditorSection({ problemData, contestId }) {
         />
       </div>
       {/* Result Banner */}
-      <ResultBanner
-        result={resultBanner.result}
-        visible={resultBanner.visible}
-        onClose={closeBanner}
-      />
+      {feedback.visible ? (
+        <div className="mt-3 rounded border border-red-500 px-3 py-2 text-sm text-red-300">
+          {feedback.message}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -6,10 +6,13 @@ import { MdCreate, MdList } from "react-icons/md";
 import Button from "@/components/ButtonComponent/Button";
 import CreateProblem from "@/components/CreateProblemComponent/CreateProblemComponent";
 import setterModule from "@/api/setter/setter";
-import { useRouter } from "next/navigation";
+import { withRole } from "@/components/HOC/withAuth";
+import { USER_ROLES } from "@/utils/constants";
+import PageLoading from "@/components/LoadingSpinner/PageLoading";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 function SetterPanel() {
-  const router = useRouter();
   const [problemList, setProblemList] = useState([]);
   const [activeItem, setActiveItem] = useState(0);
   const [modalActive, setModalActive] = useState(false);
@@ -17,46 +20,33 @@ function SetterPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProblems = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const data = await setterModule.getProblems();
-
-        if (data.error) {
-          // Check if it's an authentication error
-          if (
-            data.error === "No access token found" ||
-            data.error === "Invalid or expired token" ||
-            data.error === "Invalid Token"
-          ) {
-            // Redirect to login page for auth errors
-            router.push("/login");
-            return;
-          }
-
-          // Handle other API errors
-          throw new Error(data.error);
-        }
-
-        // Ensure data is an array
-        if (Array.isArray(data)) {
-          setProblemList(data);
-        } else {
-          setProblemList([]);
-          console.warn("API returned non-array data:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching problems:", error);
-        setError(error.message || "Failed to load problems");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProblems();
-  }, [router]);
+  }, []);
+
+  const fetchProblems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await setterModule.getProblems();
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      // Ensure data is an array
+      if (response.data && Array.isArray(response.data)) {
+        setProblemList(response.data);
+      } else {
+        setProblemList([]);
+      }
+    } catch (error) {
+      console.error("Error fetching problems:", error);
+      setError(error.message || "Failed to load problems");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreate = () => {
     setModalActive(true);
@@ -159,40 +149,14 @@ function SetterPanel() {
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                  <span className="text-zinc-300 text-lg">
-                    Loading problems...
-                  </span>
-                </div>
-              </div>
+              <PageLoading text="Loading problems..." height="py-12" />
             ) : error ? (
-              <div className="mt-6 p-6 rounded-lg bg-red-900/20 border border-red-700/50 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-3">
-                  <svg
-                    className="w-6 h-6 text-red-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-red-400 font-medium">
-                    Error Loading Problems
-                  </span>
-                </div>
-                <p className="text-red-300 mb-4">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                >
-                  Try Again
-                </button>
-              </div>
+              <ErrorMessage
+                message={error}
+                type="error"
+                onRetry={fetchProblems}
+                fullWidth={true}
+              />
             ) : problemList.length > 0 ? (
               <div className="bg-zinc-800/70 rounded-lg overflow-hidden shadow-lg border border-zinc-700/50">
                 <table className="min-w-full divide-y divide-zinc-700">
@@ -245,10 +209,10 @@ function SetterPanel() {
                 </table>
               </div>
             ) : (
-              <div className="mt-6 p-6 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-3">
+              <EmptyState
+                icon={
                   <svg
-                    className="w-6 h-6 text-zinc-400"
+                    className="w-12 h-12"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -258,20 +222,12 @@ function SetterPanel() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-zinc-400 font-medium">
-                    No Problems Found
-                  </span>
-                </div>
-                <p className="text-zinc-500 mb-4">
-                  No problems available yet. Create your first problem to get
-                  started.
-                </p>
-                <Button
-                  name="Create Your First Problem"
-                  icon={<MdCreate />}
-                  onClick={handleCreate}
-                />
-              </div>
+                }
+                title="No Problems Found"
+                description="No problems available yet. Create your first problem to get started."
+                action={handleCreate}
+                actionLabel="Create Your First Problem"
+              />
             )}
           </div>
         </div>
@@ -280,4 +236,4 @@ function SetterPanel() {
   );
 }
 
-export default SetterPanel;
+export default withRole(SetterPanel, [USER_ROLES.SETTER, USER_ROLES.ADMIN]);

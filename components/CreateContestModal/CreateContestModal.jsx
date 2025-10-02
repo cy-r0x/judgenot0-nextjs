@@ -71,15 +71,15 @@ export default function CreateContestModal({ isOpen, onClose }) {
         duration_seconds: parseInt(formData.duration_seconds) * 60,
       };
 
-      const response = await contestModule.createContest(contestData);
+      const { data, error } = await contestModule.createContest(contestData);
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
+      if (error) {
+        showNotification(error, "error");
+      } else if (data && data.id) {
         showNotification("Contest created successfully!", "success");
         // Redirect to edit page after short delay
         setTimeout(() => {
-          router.push(`/edit/contest/${response.id}`);
+          router.push(`/edit/contest/${data.id}`);
         }, 1000);
       }
     } catch (error) {

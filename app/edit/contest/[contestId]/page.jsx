@@ -2,6 +2,8 @@
 
 import { use } from "react";
 import ContestEditComponent from "@/components/ContestEditComponent/ContestEditComponent";
+import { withRole } from "@/components/HOC/withAuth";
+import { USER_ROLES } from "@/utils/constants";
 
 function EditContest({ params }) {
   const { contestId } = use(params);
@@ -13,4 +15,4 @@ function EditContest({ params }) {
   );
 }
 
-export default EditContest;
+export default withRole(EditContest, USER_ROLES.ADMIN);

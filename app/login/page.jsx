@@ -3,10 +3,12 @@ import { useState } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Button from "@/components/ButtonComponent/Button";
 import Bar from "@/components/BarComponent/BarComponent";
-import { useRouter } from "next/navigation";
-import userMoudle from "@/api/user/user";
+import { useAuth } from "@/contexts/AuthContext";
+import { withGuest } from "@/components/HOC/withAuth";
+import userModule from "@/api/user/user";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 
-export default () => {
+function LoginPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -15,7 +17,7 @@ export default () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,12 +33,36 @@ export default () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    const response = userMoudle.Login(formData.username, formData.password);
-    if (response.error) {
+
+    // Validation
+    if (!formData.username || !formData.password) {
+      setError("Please enter both username and password");
       return;
     }
-    router.push("/");
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await userModule.Login(
+        formData.username,
+        formData.password
+      );
+
+      if (response.error) {
+        setError(response.error);
+        setIsLoading(false);
+        return;
+      }
+
+      // Login successful - use auth context to handle redirect
+      if (response.data) {
+        login(response.data);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,8 +72,13 @@ export default () => {
           <Bar title={"Login"} center={true} />
           <div className="bg-zinc-800 inline-flex flex-col justify-center items-center p-10">
             {error && (
-              <div className="mb-4 p-3 bg-red-500 text-white rounded text-center text-sm">
-                {error}
+              <div className="mb-4 w-full">
+                <ErrorMessage
+                  message={error}
+                  type="error"
+                  onDismiss={() => setError("")}
+                  fullWidth={true}
+                />
               </div>
             )}
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
@@ -62,7 +93,9 @@ export default () => {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Username"
-                  className="border-2 border-zinc-700 bg-zinc-900 text-center p-2 rounded w-72 outline-none focus:border-orange-500"
+                  disabled={isLoading}
+                  className="border-2 border-zinc-700 bg-zinc-900 text-center p-2 rounded w-72 outline-none focus:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  required
                 />
               </div>
 
@@ -77,13 +110,16 @@ export default () => {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="border-2 border-zinc-700 bg-zinc-900 text-center p-2 rounded w-full outline-none focus:border-orange-500"
+                    className="border-2 border-zinc-700 bg-zinc-900 text-center p-2 rounded w-full outline-none focus:border-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Password"
+                    disabled={isLoading}
+                    required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer disabled:cursor-not-allowed"
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <FaEyeSlash size={18} />
@@ -104,4 +140,6 @@ export default () => {
       </div>
     </>
   );
-};
+}
+
+export default withGuest(LoginPage);

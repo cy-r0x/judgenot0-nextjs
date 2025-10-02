@@ -1,9 +1,19 @@
-import axios from "axios";
-import userMoudle from "../user/user";
+/**
+ * Problem API Module
+ * Handles all problem-related API calls
+ */
+import apiClient from "@/utils/apiClient";
+import { handleApiError } from "@/utils/errorHandler";
+import { API_ENDPOINTS } from "@/utils/constants";
 
-const problemMoudle = {};
+const problemModule = {};
 
-problemMoudle.getProblem = async (problemId) => {
+/**
+ * Get problem by ID
+ * @param {number|string} problemId - Problem ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+problemModule.getProblem = async (problemId) => {
   // Input validation
   if (!problemId) {
     return { error: "Problem ID is required" };
@@ -15,84 +25,58 @@ problemMoudle.getProblem = async (problemId) => {
     return { error: "Invalid problem ID format" };
   }
 
-  const access_token = userMoudle.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   try {
-    const response = await axios.get(
-      `http://localhost:8000/api/problems/${numericId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
+    const response = await apiClient.get(
+      API_ENDPOINTS.PROBLEM_BY_ID(numericId)
     );
+    const problemData = response.data;
 
-    if (response.status === 200) {
-      const problemData = response.data;
-
-      // Ensure test_cases is always an array (handle null/undefined)
-      if (!problemData.test_cases || !Array.isArray(problemData.test_cases)) {
-        problemData.test_cases = [];
-      }
-
-      // Ensure numeric fields are properly typed
-      if (problemData.time_limit) {
-        problemData.time_limit = parseInt(problemData.time_limit);
-      }
-      if (problemData.memory_limit) {
-        problemData.memory_limit = parseInt(problemData.memory_limit);
-      }
-      if (problemData.id) {
-        problemData.id = parseInt(problemData.id);
-      }
-      if (problemData.created_by) {
-        problemData.created_by = parseInt(problemData.created_by);
-      }
-
-      return problemData;
-    } else {
-      return { error: `Unexpected response status: ${response.status}` };
+    // Ensure test_cases is always an array (handle null/undefined)
+    if (!problemData.test_cases || !Array.isArray(problemData.test_cases)) {
+      problemData.test_cases = [];
     }
+
+    // Ensure numeric fields are properly typed
+    if (problemData.time_limit) {
+      problemData.time_limit = parseInt(problemData.time_limit);
+    }
+    if (problemData.memory_limit) {
+      problemData.memory_limit = parseInt(problemData.memory_limit);
+    }
+    if (problemData.id) {
+      problemData.id = parseInt(problemData.id);
+    }
+    if (problemData.created_by) {
+      problemData.created_by = parseInt(problemData.created_by);
+    }
+
+    return { data: problemData };
   } catch (error) {
-    console.error("Error fetching problem:", error);
+    const handledError = handleApiError(error, {
+      context: "Get Problem",
+      problemId,
+    });
 
-    if (error.response) {
-      // Server responded with error status
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Access denied" };
-        case 404:
-          return { error: "Problem not found" };
-        case 500:
-          return { error: "Server error occurred" };
-        default:
-          return {
-            error:
-              error.response.data?.message ||
-              `Server error: ${error.response.status}`,
-          };
-      }
-    } else if (error.request) {
-      // Network error - no response received
-      return { error: "Network error - unable to connect to server" };
-    } else {
-      // Other errors
-      return { error: "An unexpected error occurred" };
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+    if (error.status === 404) {
+      return { error: "Problem not found" };
+    }
+
+    return { error: handledError.error };
   }
 };
 
-problemMoudle.updateProblem = async (problem) => {
-  const access_token = userMoudle.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
+/**
+ * Update problem
+ * @param {Object} problem - Problem data with ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+problemModule.updateProblem = async (problem) => {
   try {
     // Helper function to safely stringify content if it's not already a string
     const safeStringify = (content) => {
@@ -102,40 +86,31 @@ problemMoudle.updateProblem = async (problem) => {
       return JSON.stringify(content);
     };
 
-    const response = await axios.put(
-      `http://localhost:8000/api/problems`,
-      {
-        id: problem.id,
-        title: problem.title,
-        slug: problem.slug,
-        statement: safeStringify(problem.statement),
-        input_statement: safeStringify(problem.input_statement),
-        output_statement: safeStringify(problem.output_statement),
-        time_limit: parseInt(problem.time_limit),
-        memory_limit: parseInt(problem.memory_limit),
-        test_cases: problem.test_cases,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
+    const response = await apiClient.put(API_ENDPOINTS.PROBLEMS, {
+      id: problem.id,
+      title: problem.title,
+      slug: problem.slug,
+      statement: safeStringify(problem.statement),
+      input_statement: safeStringify(problem.input_statement),
+      output_statement: safeStringify(problem.output_statement),
+      time_limit: parseInt(problem.time_limit),
+      memory_limit: parseInt(problem.memory_limit),
+      test_cases: problem.test_cases,
+    });
 
-    if (response.status === 200) {
-      return response.data;
-    } else {
-      return { error: "Failed to update problem" };
-    }
+    return { data: response.data };
   } catch (error) {
-    console.error("Error updating problem:", error);
-    if (error.response?.status === 401) {
-      return { error: "Invalid Token" };
+    const handledError = handleApiError(error, {
+      context: "Update Problem",
+      problemId: problem.id,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
-    return {
-      error: error.response?.data?.message || "Failed to update problem",
-    };
+
+    return { error: handledError.error };
   }
 };
 
-export default problemMoudle;
+export default problemModule;

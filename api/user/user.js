@@ -1,133 +1,114 @@
-import axios from "axios";
+/**
+ * User API Module
+ * Handles all user-related API calls
+ */
+import apiClient, { handleApiResponse } from "@/utils/apiClient";
+import { handleApiError } from "@/utils/errorHandler";
+import { API_ENDPOINTS } from "@/utils/constants";
+import { setUser, clearUser } from "@/utils/auth";
 
-const userMoudle = {};
+const userModule = {};
 
-userMoudle.Login = async (username, password) => {
+/**
+ * Login user
+ * @param {string} username - Username
+ * @param {string} password - Password
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+userModule.Login = async (username, password) => {
   try {
-    const response = await axios.post(
-      "http://localhost:8000/api/user/login",
-      {
-        username,
-        password,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await apiClient.post(API_ENDPOINTS.LOGIN, {
+      username,
+      password,
+    });
 
-    localStorage.setItem("user", JSON.stringify(response.data));
-    return response.data;
+    // Store user data
+    setUser(response.data);
+    return { data: response.data };
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      return { error: "Invalid credentials" };
+    const handledError = handleApiError(error, {
+      context: "User Login",
+      username,
+    });
+
+    // Special handling for invalid credentials
+    if (error.status === 401) {
+      return { error: "Invalid username or password" };
     }
-    return { error: error.response?.data?.message || "Login failed" };
+
+    return { error: handledError.error };
   }
 };
 
-userMoudle.Register = async (userData) => {
+/**
+ * Register a new user (Admin only)
+ * @param {Object} userData - User data
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+userModule.Register = async (userData) => {
   try {
-    // Get access token from localStorage
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.access_token) {
-      return { error: "No access token found" };
-    }
-
-    const access_token = user.access_token;
-
-    // Make the registration request
-    const response = await axios.post(
-      "http://localhost:8000/api/user/register",
-      userData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
-
-    return response.data;
+    const response = await apiClient.post(API_ENDPOINTS.REGISTER, userData);
+    return { data: response.data };
   } catch (error) {
-    console.error("Registration error:", error);
+    const handledError = handleApiError(error, {
+      context: "User Registration",
+    });
 
-    if (error.response) {
-      // Handle specific HTTP error status codes
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Insufficient permissions to register users" };
-        case 409:
-          return { error: "User already exists" };
-        case 422:
-          return { error: error.response.data?.message || "Invalid user data" };
-        default:
-          return {
-            error: error.response.data?.message || "Registration failed",
-          };
-      }
+    // Handle specific error cases
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Insufficient permissions to register users" };
+    }
+    if (error.status === 409) {
+      return { error: "User already exists" };
+    }
+    if (error.status === 422) {
+      return { error: "Invalid user data provided" };
     }
 
-    return { error: "Network error or server unavailable" };
+    return { error: handledError.error };
   }
 };
 
-userMoudle.getUserRole = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user === null) {
-    return null;
-  }
-  return user.role;
-};
-
-userMoudle.getToken = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (user === null) {
-    return null;
-  }
-  return user.access_token;
-};
-
-userMoudle.getContestUsers = async (contestId) => {
+/**
+ * Get contest users
+ * @param {number} contestId - Contest ID
+ * @returns {Promise<{data?: Array, error?: string}>}
+ */
+userModule.getContestUsers = async (contestId) => {
   try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.access_token) {
-      return { error: "No access token found" };
-    }
-
-    const response = await axios.get(
-      `http://localhost:8000/api/user/${contestId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${user.access_token}`,
-        },
-      }
+    const response = await apiClient.get(
+      API_ENDPOINTS.CONTEST_USERS(contestId)
     );
-
-    return response.data;
+    return { data: response.data };
   } catch (error) {
-    console.error("Get contest users error:", error);
+    const handledError = handleApiError(error, {
+      context: "Get Contest Users",
+      contestId,
+    });
 
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          return { error: "Invalid or expired token" };
-        case 403:
-          return { error: "Insufficient permissions" };
-        case 404:
-          return { error: "Contest not found" };
-        default:
-          return {
-            error: error.response.data?.message || "Failed to fetch users",
-          };
-      }
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Insufficient permissions" };
+    }
+    if (error.status === 404) {
+      return { error: "Contest not found" };
     }
 
-    return { error: "Network error or server unavailable" };
+    return { error: handledError.error };
   }
 };
 
-export default userMoudle;
+/**
+ * Logout user
+ */
+userModule.Logout = () => {
+  clearUser();
+};
+
+// Export for backward compatibility
+export default userModule;

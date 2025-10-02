@@ -4,24 +4,30 @@ import Bar from "@/components/BarComponent/BarComponent";
 import FormatMention from "@/handlers/mentionHandler";
 import Link from "next/link";
 import contestModule from "@/api/contest/contest";
+import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 async function ProblemList({ params }) {
   const { contestId } = await params;
-  const data = await contestModule.getContest(contestId);
+  const response = await contestModule.getContest(contestId);
 
   // Handle error case
-  if (data.error) {
+  if (response.error) {
     return (
       <div className="mx-8 my-4">
         <Bar title={"Error"} />
-        <div className="text-center py-12">
-          <p className="text-red-400 text-lg">{data.error}</p>
+        <div className="mt-6">
+          <ErrorMessage
+            message={response.error}
+            type="error"
+            fullWidth={true}
+          />
         </div>
       </div>
     );
   }
 
-  const { contest, problems } = data;
+  const { contest, problems } = response.data;
 
   // Calculate end time from start_time and duration_seconds
   const startTime = new Date(contest.start_time).getTime() / 1000; // Convert to Unix timestamp
@@ -46,9 +52,10 @@ async function ProblemList({ params }) {
                 </Link>
               ))
             ) : (
-              <div className="text-center py-12">
-                <p className="text-zinc-400 text-lg">No problems available</p>
-              </div>
+              <EmptyState
+                title="No Problems Available"
+                description="Problems will be added soon"
+              />
             )}
           </div>
         </div>

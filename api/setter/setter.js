@@ -1,45 +1,57 @@
-import axios from "axios";
-import userMoudle from "../user/user";
+/**
+ * Setter API Module
+ * Handles setter-specific API calls
+ */
+import apiClient from "@/utils/apiClient";
+import { handleApiError } from "@/utils/errorHandler";
+import { API_ENDPOINTS } from "@/utils/constants";
 
 const setterModule = {};
 
+/**
+ * Get all problems for setter
+ * @returns {Promise<{data?: Array, error?: string}>}
+ */
 setterModule.getProblems = async () => {
-  const access_token = userMoudle.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   try {
-    const response = await axios.get("http://localhost:8000/api/setter", {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
-    return response.data;
+    const response = await apiClient.get(API_ENDPOINTS.SETTER_PROBLEMS);
+    return { data: response.data };
   } catch (error) {
-    return {
-      error: error.response?.data?.message || "Failed to fetch problems",
-    };
+    const handledError = handleApiError(error, {
+      context: "Get Setter Problems",
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+
+    return { error: handledError.error };
   }
 };
 
-setterModule.createProlem = async (title) => {
-  const access_token = userMoudle.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-  const response = await axios.post(
-    "http://localhost:8000/api/problems",
-    {
+/**
+ * Create new problem
+ * @param {string} title - Problem title
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+setterModule.createProblem = async (title) => {
+  try {
+    const response = await apiClient.post(API_ENDPOINTS.PROBLEMS, {
       title,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
+    });
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Create Problem",
+      title,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
     }
-  );
-  return response.data;
+
+    return { error: handledError.error };
+  }
 };
 
 export default setterModule;

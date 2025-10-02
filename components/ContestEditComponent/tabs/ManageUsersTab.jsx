@@ -32,14 +32,16 @@ export default function ManageUsersTab({
   const fetchContestUsers = async () => {
     try {
       setLoading(true);
-      const response = await userModule.getContestUsers(contestData.contest.id);
+      const { data, error } = await userModule.getContestUsers(
+        contestData.contest.id
+      );
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
         // Map the API response to match our component's expected format
-        const mappedUsers = Array.isArray(response)
-          ? response.map((user) => ({
+        const mappedUsers = Array.isArray(data)
+          ? data.map((user) => ({
               id: user.userId,
               username: user.username,
               full_name: user.full_name,
@@ -91,11 +93,11 @@ export default function ManageUsersTab({
         allowed_contest: contestData.contest.id,
       };
 
-      const response = await userModule.Register(userData);
+      const { data, error } = await userModule.Register(userData);
 
-      if (response.error) {
-        showNotification(response.error, "error");
-      } else {
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
         // Reset form
         setNewUser({
           full_name: "",

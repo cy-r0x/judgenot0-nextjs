@@ -1,23 +1,45 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
+/**
+ * Notification Component - Toast notification with auto-dismiss
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.message - Notification message text
+ * @param {string} [props.type="info"] - Notification type: "success", "error", "warning", or "info"
+ * @param {boolean} props.isVisible - Whether notification is visible
+ * @param {Function} props.onClose - Close handler function
+ * @param {number} [props.duration=5000] - Auto-close duration in ms (0 to disable)
+ * @returns {JSX.Element|null} Notification component or null if not visible
+ *
+ * @example
+ * <NotificationComponent
+ *   message="Contest created successfully"
+ *   type="success"
+ *   isVisible={showNotification}
+ *   onClose={() => setShowNotification(false)}
+ * />
+ */
 export default function NotificationComponent({
   message,
-  type = "info", // "success", "error", "warning", "info"
+  type = "info",
   isVisible,
   onClose,
-  duration = 5000, // Auto close after 5 seconds by default
+  duration = 5000,
 }) {
+  const handleClose = useCallback(() => {
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
+
   useEffect(() => {
     if (isVisible && duration > 0) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, duration);
-
+      const timer = setTimeout(handleClose, duration);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration, onClose]);
+  }, [isVisible, duration, handleClose]);
 
   if (!isVisible) return null;
 
@@ -82,16 +104,22 @@ export default function NotificationComponent({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-md w-full">
-      <div className={`border rounded-lg shadow-lg p-4 ${getTypeStyles()}`}>
+    <div className="fixed top-4 right-4 z-50 max-w-md w-full animate-in slide-in-from-right duration-300">
+      <div
+        className={`border rounded-lg shadow-lg p-4 ${getTypeStyles()}`}
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {getIcon()}
             <p className="font-medium">{message}</p>
           </div>
           <button
-            onClick={onClose}
-            className="ml-4 inline-flex text-white hover:text-gray-200 focus:outline-none"
+            onClick={handleClose}
+            className="ml-4 inline-flex text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+            aria-label="Close notification"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path

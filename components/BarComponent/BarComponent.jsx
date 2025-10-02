@@ -1,3 +1,15 @@
+/**
+ * Bar Component - Header bar for sections
+ *
+ * @param {Object} props - Component props
+ * @param {string} props.title - Title text to display
+ * @param {boolean} [props.center=false] - Whether to center align the title
+ * @returns {JSX.Element} Styled bar component
+ *
+ * @example
+ * <Bar title="Contests" />
+ * <Bar title="Login" center={true} />
+ */
 function Bar({ title, center = false }) {
   return (
     <div
@@ -5,7 +17,7 @@ function Bar({ title, center = false }) {
         center ? "text-center" : ""
       }`}
     >
-      <p className="text-lg">{title}</p>
+      <h2 className="text-lg font-semibold">{title}</h2>
     </div>
   );
 }
