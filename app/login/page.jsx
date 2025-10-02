@@ -132,6 +132,7 @@ function LoginPage() {
 
               <Button
                 name={isLoading ? "Logging in..." : "Login"}
+                type="submit"
                 disabled={isLoading}
               />
             </form>
