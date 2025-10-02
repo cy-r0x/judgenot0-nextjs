@@ -94,6 +94,7 @@ export default function ContestEditComponent({ contestId }) {
   };
 
   const handleSave = async () => {
+    console.log(contestData);
     try {
       // Convert start_time to ISO format before sending
       const contestToUpdate = {

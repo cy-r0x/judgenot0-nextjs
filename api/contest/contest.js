@@ -56,19 +56,9 @@ contestModule.getContest = async (contestId) => {
     return { error: "Invalid contest ID format" };
   }
 
-  const access_token = userModule.getToken();
-  if (!access_token) {
-    return { error: "No access token found" };
-  }
-
   try {
     const response = await axios.get(
-      `http://localhost:8000/api/contests/${numericId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
+      `http://localhost:8000/api/contests/${numericId}`
     );
 
     if (response.status === 200) {
@@ -162,8 +152,9 @@ contestModule.updateContest = async (contest) => {
 
   try {
     const response = await axios.put(
-      `http://localhost:8000/api/contests/${contest.id}`,
+      `http://localhost:8000/api/contests`,
       {
+        id: contest.id,
         title: contest.title,
         description: contest.description,
         start_time: contest.start_time,

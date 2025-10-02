@@ -6,17 +6,22 @@ import { useMemo } from "react";
 
 export default function ProblemViewComponent({ problem, contestId }) {
   const descriptionHtml = useMemo(
-    () => convertTiptapToHtml(problem.description),
-    [problem.description]
+    () => convertTiptapToHtml(problem.statement),
+    [problem.statement]
   );
   const inputDescriptionHtml = useMemo(
-    () => convertTiptapToHtml(problem.inputDescription),
-    [problem.inputDescription]
+    () => convertTiptapToHtml(problem.input_statement),
+    [problem.input_statement]
   );
   const outputDescriptionHtml = useMemo(
-    () => convertTiptapToHtml(problem.outputDescription),
-    [problem.outputDescription]
+    () => convertTiptapToHtml(problem.output_statement),
+    [problem.output_statement]
   );
+
+  // Filter sample test cases
+  const sampleTestCases = problem.test_cases
+    ? problem.test_cases.filter((tc) => tc.is_sample)
+    : [];
 
   return (
     <>
@@ -25,7 +30,7 @@ export default function ProblemViewComponent({ problem, contestId }) {
         <div className="mb-3">
           {contestId ? (
             <Link
-              href={`/contest/${contestId}`}
+              href={`/contests/${contestId}`}
               className="inline-flex items-center text-orange-500 hover:text-orange-600 transition-colors"
             >
               <svg
@@ -49,12 +54,12 @@ export default function ProblemViewComponent({ problem, contestId }) {
           )}
         </div>
 
-        <h1 className="text-2xl font-bold mb-4">{problem.name}</h1>
+        <h1 className="text-2xl font-bold mb-4">{problem.title}</h1>
 
         <div className="border border-zinc-800 p-2 rounded mb-4">
           <p className="font-medium">
-            Time Limit: {problem.timeLimit}ms | Memory Limit:{" "}
-            {problem.memoryLimit}MB
+            Time Limit: {problem.time_limit}s | Memory Limit:{" "}
+            {problem.memory_limit}MB
           </p>
         </div>
 
@@ -80,7 +85,7 @@ export default function ProblemViewComponent({ problem, contestId }) {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="relative flex flex-col h-full">
             <h3 className="font-semibold mb-2">Sample Input</h3>
-            {problem.sampleTestCases.map((sample, index) => (
+            {sampleTestCases.map((sample, index) => (
               <div
                 key={index}
                 className="border border-zinc-800 rounded p-3 relative flex-grow"
@@ -92,15 +97,15 @@ export default function ProblemViewComponent({ problem, contestId }) {
           </div>
           <div className="relative flex flex-col h-full">
             <h3 className="font-semibold mb-2">Sample Output</h3>
-            {problem.sampleTestCases.map((sample, index) => (
+            {sampleTestCases.map((sample, index) => (
               <div
                 key={index}
                 className="border border-zinc-800 rounded p-3 relative flex-grow"
               >
                 <pre className="whitespace-pre-wrap h-full">
-                  {sample.output}
+                  {sample.expected_output}
                 </pre>
-                <CopyButton text={sample.output} />
+                <CopyButton text={sample.expected_output} />
               </div>
             ))}
           </div>

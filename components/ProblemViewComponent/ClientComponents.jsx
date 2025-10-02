@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import CodeEditor from "@/components/EditorComponent/EditorComponent";
 import Button from "@/components/ButtonComponent/Button";
+import submissionModule from "@/api/submission/submission";
 
 // Client-side component for copying text to clipboard
 export function CopyButton({ text }) {
@@ -64,7 +65,7 @@ function ResultBanner({ result, visible, onClose }) {
 }
 
 // Client-side component for the editor section
-export function EditorSection({ problemData }) {
+export function EditorSection({ problemData, contestId }) {
   const [code, setCode] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,16 +96,14 @@ export function EditorSection({ problemData }) {
 
   const handleSubmit = async () => {
     const requestData = {
-      testCases: [
-        ...problemData.sampleTestCases,
-        ...problemData.regularTestCases,
-      ],
-      timeLimit: problemData.timeLimit,
-      memoryLimit: problemData.memoryLimit,
-      code: code,
+      problem_id: problemData.id,
+      contest_id: contestId,
+      source_code: code,
       language: selectedLanguage,
     };
     console.log(requestData);
+    const response = await submissionModule.submitSubmission(requestData);
+    console.log(response);
   };
 
   const handleLanguageChange = (e) => {
