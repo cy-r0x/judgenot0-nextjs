@@ -79,7 +79,7 @@ function Navbar() {
                       </li>
                       <li>
                         <Link
-                          href={`/contests/${contestId}/leaderboard`}
+                          href={`/contests/${contestId}/standings`}
                           key={"standings"}
                         >
                           <p className="hover:text-orange-500 transition-colors">
@@ -94,13 +94,29 @@ function Navbar() {
 
               {/* Guest users: Show Contests link */}
               {!isAuthenticated() && (
-                <li>
-                  <Link href={"/contests"} key={"contests"}>
-                    <p className="hover:text-orange-500 transition-colors">
-                      Contests
-                    </p>
-                  </Link>
-                </li>
+                <>
+                  <li>
+                    <Link href={"/contests"} key={"contests"}>
+                      <p className="hover:text-orange-500 transition-colors">
+                        Contests
+                      </p>
+                    </Link>
+                  </li>
+
+                  {/* Guest on a specific contest page: Show Standings */}
+                  {isOnContestPage && contestId && (
+                    <li>
+                      <Link
+                        href={`/contests/${contestId}/standings`}
+                        key={"standings"}
+                      >
+                        <p className="hover:text-orange-500 transition-colors">
+                          Standings
+                        </p>
+                      </Link>
+                    </li>
+                  )}
+                </>
               )}
 
               {isAuthenticated() && (

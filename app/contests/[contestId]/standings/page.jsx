@@ -1,109 +1,64 @@
-import { MdOutlineDoneAll } from "react-icons/md";
-import { RxCross2 } from "react-icons/rx";
-import { BsStarFill } from "react-icons/bs";
-import LeaderboardDataModule from "@/utils/fetchLeaderboard";
+import Bar from "@/components/BarComponent/BarComponent";
+import StandingsComponent from "@/components/StandingsComponent/StandingsComponent";
+import contestModule from "@/api/contest/contest";
 
-export default async () => {
-  const data = await LeaderboardDataModule.getData();
-  const { problemCount, leaderboardStat } = data;
+/**
+ * Contest Standings Page - Server Component
+ * Displays the leaderboard for a specific contest
+ * Public page - no authentication required
+ *
+ * @param {Object} props - Page props
+ * @param {Object} props.params - URL parameters
+ * @param {string} props.params.contestId - Contest ID from URL
+ * @returns {JSX.Element} Standings page
+ */
+export default async function StandingsPage({ params }) {
+  const { contestId } = await params;
 
+  // Fetch standings data (public endpoint)
+  const { data: standingsData, error: standingsError } =
+    await contestModule.getContestStandings(contestId);
+
+  // Fetch contest details for the title
+  const { data: contestData, error: contestError } =
+    await contestModule.getContest(contestId);
+
+  if (standingsError || contestError) {
+    return (
+      <div className="min-h-screen">
+        <Bar title="Standings" />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-red-900/30 border border-red-500 rounded-lg px-6 py-4">
+            <p className="text-red-300">
+              {standingsError || contestError || "Failed to load standings"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const contestTitle = contestData?.contest?.title || "Contest";
   return (
-    <div className="px-6 py-6 text-white">
-      <p className="text-3xl font-bold mb-6 text-center text-white">
-        Leaderboard
-      </p>
-      <div className="overflow-x-auto">
-        <table className="w-[90%] mx-auto border border-gray-700 rounded-lg overflow-hidden">
-          <thead className="bg-[#2a2a2a] text-gray-300">
-            <tr>
-              <th className="py-3 px-4 border border-gray-700">User</th>
-              <th className="py-3 px-4 border border-gray-700">Solved</th>
-              <th className="py-3 px-4 border border-gray-700">Penalty</th>
-              {Array.from({ length: problemCount }, (_, i) => (
-                <th key={i} className="py-3 px-4 border border-gray-700">
-                  {String.fromCharCode(i + 65)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboardStat.map((userStat, index) => (
-              <tr
-                key={index}
-                className="even:bg-[#222] odd:bg-[#1c1c1c] hover:bg-[#333] transition-all"
-              >
-                <td className="text-center py-3 px-4 border border-gray-700 font-medium">
-                  {userStat.userName}
-                </td>
-                <td className="text-center py-3 px-4 border border-gray-700 text-green-400 font-semibold">
-                  {
-                    Object.values(userStat.problemStatus).filter(
-                      (status) => status.isSolved
-                    ).length
-                  }
-                </td>
-                <td className="text-center py-3 px-4 border border-gray-700 text-yellow-300">
-                  {Object.values(userStat.problemStatus).reduce(
-                    (acc, status) => acc + status.penalty,
-                    0
-                  )}
-                </td>
-                {Array.from({ length: problemCount }, (_, i) => {
-                  const problemKey = String.fromCharCode(i + 65);
-                  const problemStatus = userStat.problemStatus[problemKey];
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Contest Header */}
+        <div className="mb-6 bg-zinc-800 rounded-lg px-6 py-5 border-b-4 border-orange-500 shadow-lg">
+          <div className="text-center">
+            <p className="text-sm text-zinc-400 uppercase tracking-wider mb-2">
+              Standings
+            </p>
+            <h1 className="text-2xl md:text-3xl font-bold text-zinc-100">
+              {contestTitle}
+            </h1>
+          </div>
+        </div>
 
-                  return (
-                    <td
-                      key={i}
-                      className="text-center py-3 px-4 border border-gray-700"
-                    >
-                      {problemStatus ? (
-                        problemStatus.isSolved ? (
-                          problemStatus.isFirstSolve ? (
-                            <div>
-                              <BsStarFill className="text-green-500 mx-auto   text-2xl " />
-                              {problemStatus.wrongSubmissionCount > 0 ? (
-                                <div>
-                                  <span className="font-bold text-green-500">
-                                    +{problemStatus.wrongSubmissionCount}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div></div>
-                              )}
-                            </div>
-                          ) : (
-                            <div>
-                              <MdOutlineDoneAll className="text-green-500 mx-auto text-2xl" />
-                              {problemStatus.wrongSubmissionCount > 0 ? (
-                                <div>
-                                  <span className="font-bold text-green-500">
-                                    +{problemStatus.wrongSubmissionCount}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div></div>
-                              )}
-                            </div>
-                          )
-                        ) : (
-                          <div>
-                            <p className="font-bold text-red-500">
-                              -{problemStatus.wrongSubmissionCount}
-                            </p>
-                          </div>
-                        )
-                      ) : (
-                        <span className="text-gray-500">-</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Standings Table */}
+        <div className="bg-zinc-900 rounded-lg shadow-xl overflow-hidden border border-zinc-800">
+          <StandingsComponent standingsData={standingsData} />
+        </div>
       </div>
     </div>
   );
-};
+}

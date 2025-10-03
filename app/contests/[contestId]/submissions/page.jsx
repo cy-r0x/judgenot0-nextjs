@@ -3,13 +3,21 @@
 import { useState, useEffect } from "react";
 import { FaUser, FaClock, FaMemory } from "react-icons/fa";
 import { GoFileCode, GoVersions, GoHash } from "react-icons/go";
-import { MdOutlineDone, MdClose, MdLoop } from "react-icons/md";
+import {
+  MdOutlineDone,
+  MdClose,
+  MdLoop,
+  MdAccessTime,
+  MdMemory,
+  MdError,
+} from "react-icons/md";
 import Link from "next/link";
 import submissionModule from "@/api/submission/submission";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
-import { formatShortDate } from "@/utils/dateFormatter";
+import { getRelativeTime } from "@/utils/dateFormatter";
 import EmptyState from "@/components/EmptyState/EmptyState";
+import { getVerdictName, getVerdictColor } from "@/utils/verdictFormatter";
 
 export default function SubmissionsTable({ params }) {
   const [contestId, setContestId] = useState(null);
@@ -82,19 +90,44 @@ export default function SubmissionsTable({ params }) {
   }
 
   const getStatusIcon = (verdict) => {
-    switch (verdict) {
-      case "Accepted":
+    const lowerVerdict = verdict?.toLowerCase();
+
+    switch (lowerVerdict) {
+      case "ac":
+      case "accepted":
         return <MdOutlineDone className="text-green-500" title="Accepted" />;
-      case "Wrong Answer":
+      case "wa":
+      case "wrong answer":
         return <MdClose className="text-red-500" title="Wrong Answer" />;
-      case "Pending":
+      case "tle":
+      case "time limit exceeded":
+        return (
+          <MdAccessTime
+            className="text-purple-500"
+            title="Time Limit Exceeded"
+          />
+        );
+      case "mle":
+      case "memory limit exceeded":
+        return (
+          <MdMemory className="text-orange-500" title="Memory Limit Exceeded" />
+        );
+      case "re":
+      case "runtime error":
+        return <MdError className="text-pink-500" title="Runtime Error" />;
+      case "ce":
+      case "compilation error":
+        return (
+          <MdClose className="text-yellow-500" title="Compilation Error" />
+        );
+      case "pending":
         return (
           <GoVersions
-            className="text-yellow-500 animate-pulse duration-1000"
+            className="text-yellow-400 animate-pulse duration-1000"
             title="Pending"
           />
         );
-      case "Running":
+      case "running":
         return (
           <MdLoop className="text-blue-500 animate-spin" title="Running" />
         );
@@ -230,19 +263,11 @@ export default function SubmissionsTable({ params }) {
                     <div className="flex items-center gap-2">
                       {getStatusIcon(item.verdict)}
                       <span
-                        className={`font-medium ${
-                          item.verdict === "Accepted"
-                            ? "text-green-600"
-                            : item.verdict === "Wrong Answer"
-                            ? "text-red-600"
-                            : item.verdict === "Pending"
-                            ? "text-yellow-600"
-                            : item.verdict === "Running"
-                            ? "text-blue-600"
-                            : "text-gray-600"
-                        }`}
+                        className={`font-medium ${getVerdictColor(
+                          item.verdict
+                        )}`}
                       >
-                        {item.verdict}
+                        {getVerdictName(item.verdict)}
                       </span>
                     </div>
                   </td>
@@ -255,7 +280,7 @@ export default function SubmissionsTable({ params }) {
                     {item.memory_used ? `${item.memory_used} KB` : "—"}
                   </td>
                   <td className="py-3 px-4 text-zinc-400">
-                    {formatShortDate(item.submitted_at)}
+                    {getRelativeTime(item.submitted_at)}
                   </td>
                 </tr>
               ))}

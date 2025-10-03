@@ -248,4 +248,46 @@ contestModule.getContestProblems = async (contestId) => {
   }
 };
 
+/**
+ * Get standings for a contest
+ * @param {number|string} contestId - Contest ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+contestModule.getContestStandings = async (contestId) => {
+  // Input validation
+  if (!contestId) {
+    return { error: "Contest ID is required" };
+  }
+
+  const numericId = parseInt(contestId);
+  if (isNaN(numericId) || numericId <= 0) {
+    return { error: "Invalid contest ID format" };
+  }
+
+  try {
+    const response = await apiClient.get(
+      API_ENDPOINTS.CONTEST_STANDINGS(numericId)
+    );
+
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Get Contest Standings",
+      contestId,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Access denied" };
+    }
+    if (error.status === 404) {
+      return { error: "Contest not found" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
 export default contestModule;

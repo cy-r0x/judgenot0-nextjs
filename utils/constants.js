@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   CONTEST_BY_ID: (id) => `/api/contests/${id}`,
   CONTEST_ASSIGN: "/api/contests/assign",
   CONTEST_PROBLEMS: (id) => `/api/contests/problems/${id}`,
+  CONTEST_STANDINGS: (id) => `/api/standings/${id}`,
 
   // Problems
   PROBLEMS: "/api/problems",

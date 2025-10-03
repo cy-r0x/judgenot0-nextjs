@@ -6,7 +6,12 @@ import Link from "next/link";
 import submissionModule from "@/api/submission/submission";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
-import { formatFullDate } from "@/utils/dateFormatter";
+import { getRelativeTime } from "@/utils/dateFormatter";
+import {
+  getVerdictName,
+  getVerdictColor,
+  getVerdictBgColor,
+} from "@/utils/verdictFormatter";
 
 export default function SubmissionPage({ params }) {
   const [contestId, setContestId] = useState(null);
@@ -67,8 +72,8 @@ export default function SubmissionPage({ params }) {
     );
   }
 
-  // Format the submitted date using utility
-  const formattedDate = formatFullDate(submissionData.submitted_at);
+  // Format the submitted date as "time ago"
+  const timeAgo = getRelativeTime(submissionData.submitted_at);
 
   return (
     <div className="px-6 md:px-16 py-6">
@@ -105,19 +110,11 @@ export default function SubmissionPage({ params }) {
         <div className="bg-zinc-800 p-4 rounded-lg">
           <div className="text-zinc-400 text-sm">Verdict</div>
           <div
-            className={`font-medium text-lg ${
-              submissionData.verdict === "Accepted"
-                ? "text-green-500"
-                : submissionData.verdict === "Wrong Answer"
-                ? "text-red-500"
-                : submissionData.verdict === "Pending"
-                ? "text-yellow-500"
-                : submissionData.verdict === "Running"
-                ? "text-blue-500"
-                : "text-gray-500"
-            }`}
+            className={`font-medium text-lg ${getVerdictColor(
+              submissionData.verdict
+            )}`}
           >
-            {submissionData.verdict}
+            {getVerdictName(submissionData.verdict)}
           </div>
         </div>
 
@@ -148,7 +145,7 @@ export default function SubmissionPage({ params }) {
 
         <div className="bg-zinc-800 p-4 rounded-lg">
           <div className="text-zinc-400 text-sm">Submitted At</div>
-          <div className="font-medium text-lg">{formattedDate}</div>
+          <div className="font-medium text-lg">{timeAgo}</div>
         </div>
       </div>
 
