@@ -125,7 +125,7 @@ export default function SubmissionPage({ params }) {
           <div className="text-zinc-400 text-sm">Execution Time</div>
           <div className="font-medium text-lg">
             {submissionData.execution_time
-              ? `${submissionData.execution_time} ms`
+              ? `${submissionData.execution_time * 1000} ms`
               : "—"}
           </div>
         </div>

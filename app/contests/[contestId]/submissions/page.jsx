@@ -247,7 +247,9 @@ export default function SubmissionsTable({ params }) {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    {item.execution_time ? `${item.execution_time} ms` : "—"}
+                    {item.execution_time
+                      ? `${item.execution_time * 1000} ms`
+                      : "—"}
                   </td>
                   <td className="py-3 px-4">
                     {item.memory_used ? `${item.memory_used} KB` : "—"}
