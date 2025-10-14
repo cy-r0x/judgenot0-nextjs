@@ -100,7 +100,7 @@ export default function SubmissionsTable({ params }) {
       case "wrong answer":
         return <MdClose className="text-red-500" title="Wrong Answer" />;
       case "tle":
-      case "time limit exceeded":
+      case "time limit exceeded":``
         return (
           <MdAccessTime
             className="text-purple-500"

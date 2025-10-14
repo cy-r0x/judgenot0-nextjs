@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Button from "@/components/ButtonComponent/Button";
 import { MdAdd, MdDelete, MdSearch, MdPersonAdd } from "react-icons/md";
 import userModule from "@/api/user/user";
+import axios from "axios";
+import { getToken } from "@/utils/auth";
 
 export default function ManageUsersTab({
   contestData,
@@ -123,16 +125,37 @@ export default function ManageUsersTab({
   };
 
   const handleRemoveUser = async (userId) => {
+    if (!confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // TODO: Implement remove user API call when available
-      // For now, just remove from local state
-      setUsers((prev) => prev.filter((user) => user.id !== userId));
-      showNotification("User removed successfully!", "success");
+      const token = getToken();
+      const response = await axios.post(
+        `/api/users/delete/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setUsers((prev) => prev.filter((user) => user.id !== userId));
+        showNotification("User deleted successfully!", "success");
+        // Refresh users list
+        await fetchContestUsers();
+      }
     } catch (error) {
       console.error("Error removing user:", error);
-      showNotification("Failed to remove user. Please try again.", "error");
+      showNotification(
+        error.response?.data?.message ||
+          "Failed to delete user. Please try again.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }

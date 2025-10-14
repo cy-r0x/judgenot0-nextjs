@@ -13,8 +13,8 @@ export const USER_ROLES = {
 // API endpoints
 export const API_ENDPOINTS = {
   // Auth
-  LOGIN: "/api/user/login",
-  REGISTER: "/api/user/register",
+  LOGIN: "/api/users/login",
+  REGISTER: "/api/users/register",
 
   // Contests
   CONTESTS: "/api/contests",
@@ -26,14 +26,15 @@ export const API_ENDPOINTS = {
   // Problems
   PROBLEMS: "/api/problems",
   PROBLEM_BY_ID: (id) => `/api/problems/${id}`,
-  SETTER_PROBLEMS: "/api/setter",
+  SETTER_PROBLEMS: "/api/setters/problems",
 
   // Submissions
   SUBMISSIONS: "/api/submissions",
   SUBMISSION_BY_ID: (id) => `/api/submissions/${id}`,
 
   // Users
-  CONTEST_USERS: (contestId) => `/api/user/${contestId}`,
+  CONTEST_USERS: (contestId) => `/api/users/${contestId}`,
+  SETTERS: () => "/api/users/setter",
 };
 
 // Local storage keys

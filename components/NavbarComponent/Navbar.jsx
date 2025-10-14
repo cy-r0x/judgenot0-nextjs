@@ -39,6 +39,7 @@ function Navbar() {
           <div>
             <ul className="flex items-center gap-4">
               {/* Show different nav items based on role and page */}
+
               {isAuthenticated() &&
                 (role === USER_ROLES.ADMIN || role === USER_ROLES.SETTER) && (
                   <>

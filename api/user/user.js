@@ -104,6 +104,30 @@ userModule.getContestUsers = async (contestId) => {
 };
 
 /**
+ * Get all setters (Admin only)
+ * @returns {Promise<{data?: Array, error?: string}>}
+ */
+userModule.getSetters = async () => {
+  try {
+    const response = await apiClient.get(API_ENDPOINTS.SETTERS());
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Get Setters",
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Insufficient permissions to view setters" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
+/**
  * Logout user
  */
 userModule.Logout = () => {
