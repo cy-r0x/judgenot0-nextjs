@@ -4,6 +4,7 @@ import CodeEditor from "@/components/EditorComponent/EditorComponent";
 import Button from "@/components/ButtonComponent/Button";
 import submissionModule from "@/api/submission/submission";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 // Client-side component for copying text to clipboard
 export function CopyButton({ text }) {
@@ -56,9 +57,30 @@ export function EditorSection({ problemData, contestId }) {
     };
   }, [feedback.visible]);
 
+//   type Submission struct {
+// 	SubmissionId *int64     `json:"submission_id"`
+// 	ProblemId    *int64     `json:"problem_id"`
+// 	Language     string     `json:"language"`
+// 	SourceCode   string     `json:"source_code"`
+// 	Testcases    []Testcase `json:"testcases"`
+// 	Timelimit    float32    `json:"time_limit"`
+// 	MemoryLimit  float32    `json:"memory_limit"`
+// }
+
   const handleCompileRun = () => {
-    console.log("Compile and Run - Problem Data:", problemData);
-    console.log(code);
+    const data = {
+      submission_id: null,
+      problem_id: null,
+      language: selectedLanguage,
+      source_code: code,
+      testcases: problemData.sample_testcases || [],
+      time_limit: problemData.time_limit,
+      memory_limit: problemData.memory_limit,
+    };
+    
+    console.log(data);
+  const response = axios.post('http://localhost:8080/run', data);
+    console.log(response.data);
   };
 
   const handleSubmit = async () => {
