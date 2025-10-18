@@ -57,29 +57,18 @@ export function EditorSection({ problemData, contestId }) {
     };
   }, [feedback.visible]);
 
-//   type Submission struct {
-// 	SubmissionId *int64     `json:"submission_id"`
-// 	ProblemId    *int64     `json:"problem_id"`
-// 	Language     string     `json:"language"`
-// 	SourceCode   string     `json:"source_code"`
-// 	Testcases    []Testcase `json:"testcases"`
-// 	Timelimit    float32    `json:"time_limit"`
-// 	MemoryLimit  float32    `json:"memory_limit"`
-// }
-
-  const handleCompileRun = () => {
+  const handleCompileRun = async () => {
     const data = {
       submission_id: null,
       problem_id: null,
       language: selectedLanguage,
       source_code: code,
-      testcases: problemData.sample_testcases || [],
+      testcases: problemData.test_cases || [],
       time_limit: problemData.time_limit,
       memory_limit: problemData.memory_limit,
     };
-    
-    console.log(data);
-  const response = axios.post('http://localhost:8080/run', data);
+
+    const response = await axios.post("http://localhost:8080/run", data);
     console.log(response.data);
   };
 
