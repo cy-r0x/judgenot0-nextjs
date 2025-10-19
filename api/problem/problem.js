@@ -113,4 +113,69 @@ problemModule.updateProblem = async (problem) => {
   }
 };
 
+/**
+ * Add a test case to a problem
+ * @param {Object} testCase - Test case data
+ * @param {number} testCase.problem_id - Problem ID
+ * @param {string} testCase.input - Test case input
+ * @param {string} testCase.expected_output - Expected output
+ * @param {boolean} testCase.is_sample - Whether this is a sample test case
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+problemModule.addTestCase = async (testCase) => {
+  try {
+    const response = await apiClient.post(API_ENDPOINTS.TESTCASES, {
+      problem_id: parseInt(testCase.problem_id),
+      input: testCase.input,
+      expected_output: testCase.expected_output,
+      is_sample: testCase.is_sample,
+    });
+
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Add Test Case",
+      problemId: testCase.problem_id,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 400) {
+      return { error: "Invalid test case data" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
+/**
+ * Delete a test case
+ * @param {number|string} testCaseId - Test case ID
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+problemModule.deleteTestCase = async (testCaseId) => {
+  try {
+    const response = await apiClient.delete(
+      API_ENDPOINTS.TESTCASE_BY_ID(testCaseId)
+    );
+
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Delete Test Case",
+      testCaseId,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 404) {
+      return { error: "Test case not found" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
 export default problemModule;

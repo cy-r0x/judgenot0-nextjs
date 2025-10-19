@@ -4,6 +4,7 @@ import { useState } from "react";
 import Button from "@/components/ButtonComponent/Button";
 import CodeMirror from "@uiw/react-codemirror";
 import { material } from "@uiw/codemirror-theme-material";
+import problemModule from "@/api/problem/problem";
 
 export default function TestCaseModal({
   isOpen,
@@ -14,56 +15,95 @@ export default function TestCaseModal({
   problemData,
   setProblemData,
   editingIndex,
+  showNotification,
 }) {
   const [input, setInput] = useState(testCase.input || "");
   const [output, setOutput] = useState(testCase.output || "");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!input.trim() && !output.trim()) {
       alert("Both input and output must not be empty");
       return;
     }
 
-    const newTestCase = {
-      input,
-      expected_output: output,
-      is_sample: testCaseType === "sample",
-    };
+    setIsSaving(true);
 
-    if (editingIndex === -1) {
-      // Add new test case
-      setProblemData((prev) => ({
-        ...prev,
-        test_cases: [...prev.test_cases, newTestCase],
-      }));
-    } else {
-      // Update existing test case
-      setProblemData((prev) => {
-        const filteredTestCases = prev.test_cases.filter((tc) =>
-          testCaseType === "sample" ? tc.is_sample : !tc.is_sample
+    try {
+      if (editingIndex === -1) {
+        // Add new test case - send POST request to API
+        const { data, error } = await problemModule.addTestCase({
+          problem_id: problemData.id,
+          input,
+          expected_output: output,
+          is_sample: testCaseType === "sample",
+        });
+
+        if (error) {
+          showNotification?.(error, "error");
+          setIsSaving(false);
+          return;
+        }
+
+        if (data) {
+          // Add the new test case with the returned ID to the local state
+          setProblemData((prev) => ({
+            ...prev,
+            test_cases: [...prev.test_cases, data],
+          }));
+          showNotification?.(
+            `${
+              testCaseType === "sample" ? "Sample" : "Regular"
+            } test case added successfully!`,
+            "success"
+          );
+        }
+      } else {
+        // Update existing test case (local update only for now)
+        // Note: You might want to add an API endpoint for updating test cases
+        setProblemData((prev) => {
+          const filteredTestCases = prev.test_cases.filter((tc) =>
+            testCaseType === "sample" ? tc.is_sample : !tc.is_sample
+          );
+          const targetTestCase = filteredTestCases[editingIndex];
+
+          // Find the actual index in the original array
+          const actualIndex = prev.test_cases.findIndex(
+            (tc) =>
+              tc.input === targetTestCase.input &&
+              tc.expected_output === targetTestCase.expected_output &&
+              tc.is_sample === targetTestCase.is_sample
+          );
+
+          const updatedTestCases = prev.test_cases.map((tc, index) =>
+            index === actualIndex
+              ? { ...tc, input, expected_output: output }
+              : tc
+          );
+
+          return {
+            ...prev,
+            test_cases: updatedTestCases,
+          };
+        });
+        showNotification?.(
+          `${
+            testCaseType === "sample" ? "Sample" : "Regular"
+          } test case updated!`,
+          "success"
         );
-        const targetTestCase = filteredTestCases[editingIndex];
+      }
 
-        // Find the actual index in the original array
-        const actualIndex = prev.test_cases.findIndex(
-          (tc) =>
-            tc.input === targetTestCase.input &&
-            tc.expected_output === targetTestCase.expected_output &&
-            tc.is_sample === targetTestCase.is_sample
-        );
-
-        const updatedTestCases = prev.test_cases.map((tc, index) =>
-          index === actualIndex ? { ...tc, input, expected_output: output } : tc
-        );
-
-        return {
-          ...prev,
-          test_cases: updatedTestCases,
-        };
-      });
+      onClose();
+    } catch (error) {
+      console.error("Error saving test case:", error);
+      showNotification?.(
+        "Failed to save test case. Please try again.",
+        "error"
+      );
+    } finally {
+      setIsSaving(false);
     }
-
-    onClose();
   };
 
   return (
@@ -119,12 +159,17 @@ export default function TestCaseModal({
         <div className="flex justify-end space-x-4 pt-4 border-t border-zinc-700 mt-6">
           <button
             type="button"
-            className="px-4 py-2 bg-zinc-600 text-white rounded-md hover:bg-zinc-500 transition-colors"
+            className="px-4 py-2 bg-zinc-600 text-white rounded-md hover:bg-zinc-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
+            disabled={isSaving}
           >
             Cancel
           </button>
-          <Button name="Save Test Case" onClick={handleSave} />
+          <Button
+            name={isSaving ? "Saving..." : "Save Test Case"}
+            onClick={handleSave}
+            disabled={isSaving}
+          />
         </div>
       </div>
     </div>

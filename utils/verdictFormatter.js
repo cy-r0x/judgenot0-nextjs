@@ -33,29 +33,11 @@ export const getVerdictColor = (verdict) => {
 
   switch (lowerVerdict) {
     case "ac":
-    case "accepted":
       return "text-green-500";
-    case "wa":
-    case "wrong answer":
-      return "text-red-500";
-    case "tle":
-    case "time limit exceeded":
-      return "text-purple-500";
-    case "mle":
-    case "memory limit exceeded":
-      return "text-orange-500";
-    case "re":
-    case "runtime error":
-      return "text-pink-500";
-    case "ce":
-    case "compilation error":
-      return "text-yellow-500";
     case "pending":
-      return "text-yellow-400";
-    case "running":
-      return "text-blue-500";
+      return "text-gray-400";
     default:
-      return "text-gray-500";
+      return "text-red-500";
   }
 };
 

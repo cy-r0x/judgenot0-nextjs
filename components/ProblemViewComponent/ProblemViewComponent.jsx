@@ -82,34 +82,55 @@ export default function ProblemViewComponent({ problem, contestId }) {
         </div>
 
         {/* sample input/output section */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="relative flex flex-col h-full">
-            <h3 className="font-semibold mb-2">Sample Input</h3>
+        {sampleTestCases.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <h2 className="text-2xl font-bold">Sample Test Cases</h2>
             {sampleTestCases.map((sample, index) => (
               <div
-                key={index}
-                className="border border-zinc-800 rounded p-3 relative flex-grow"
+                key={sample.id || index}
+                className="border border-zinc-800 rounded-lg overflow-hidden"
               >
-                <pre className="whitespace-pre-wrap h-full">{sample.input}</pre>
-                <CopyButton text={sample.input} />
+                {/* Header */}
+                {sampleTestCases.length > 1 && (
+                  <div className="bg-zinc-800/30 px-4 py-2 border-b border-zinc-800">
+                    <h3 className="font-semibold text-sm">
+                      Test Case {index + 1}
+                    </h3>
+                  </div>
+                )}
+
+                {/* Content Grid */}
+                <div className="grid md:grid-cols-2 divide-x divide-zinc-800">
+                  {/* Input Column */}
+                  <div className="relative">
+                    <div className="bg-zinc-900/30 px-4 py-2 border-b border-zinc-800 flex items-center justify-between">
+                      <h4 className="font-semibold text-sm h-8">Input</h4>
+                      <CopyButton text={sample.input} />
+                    </div>
+                    <div className="p-4">
+                      <pre className="whitespace-pre-wrap text-sm font-mono overflow-x-auto">
+                        {sample.input}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Output Column */}
+                  <div className="relative">
+                    <div className="bg-zinc-900/30 px-4 py-2 border-b border-zinc-800 flex items-center justify-between">
+                      <h4 className="font-semibold text-sm h-8">Output</h4>
+                      <CopyButton text={sample.expected_output} />
+                    </div>
+                    <div className="p-4">
+                      <pre className="whitespace-pre-wrap text-sm font-mono overflow-x-auto">
+                        {sample.expected_output}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-          <div className="relative flex flex-col h-full">
-            <h3 className="font-semibold mb-2">Sample Output</h3>
-            {sampleTestCases.map((sample, index) => (
-              <div
-                key={index}
-                className="border border-zinc-800 rounded p-3 relative flex-grow"
-              >
-                <pre className="whitespace-pre-wrap h-full">
-                  {sample.expected_output}
-                </pre>
-                <CopyButton text={sample.expected_output} />
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </>
   );

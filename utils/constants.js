@@ -28,9 +28,16 @@ export const API_ENDPOINTS = {
   PROBLEM_BY_ID: (id) => `/api/problems/${id}`,
   SETTER_PROBLEMS: "/api/setters/problems",
 
+  // Test Cases
+  TESTCASES: "/api/problems/testcases",
+  TESTCASE_BY_ID: (id) => `/api/problems/testcases/${id}`,
+
   // Submissions
   SUBMISSIONS: "/api/submissions",
   SUBMISSION_BY_ID: (id) => `/api/submissions/${id}`,
+
+  // Engine
+  ENGINE_RUN: "/run",
 
   // Users
   CONTEST_USERS: (contestId) => `/api/users/${contestId}`,

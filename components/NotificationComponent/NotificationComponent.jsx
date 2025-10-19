@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 
 /**
  * Notification Component - Toast notification with auto-dismiss
@@ -10,7 +10,7 @@ import { useEffect, useCallback } from "react";
  * @param {string} [props.type="info"] - Notification type: "success", "error", "warning", or "info"
  * @param {boolean} props.isVisible - Whether notification is visible
  * @param {Function} props.onClose - Close handler function
- * @param {number} [props.duration=5000] - Auto-close duration in ms (0 to disable)
+ * @param {number} [props.duration=3000] - Auto-close duration in ms (0 to disable)
  * @returns {JSX.Element|null} Notification component or null if not visible
  *
  * @example
@@ -26,12 +26,18 @@ export default function NotificationComponent({
   type = "info",
   isVisible,
   onClose,
-  duration = 5000,
+  duration = 3000,
 }) {
+  const [isExiting, setIsExiting] = useState(false);
+
   const handleClose = useCallback(() => {
-    if (onClose) {
-      onClose();
-    }
+    setIsExiting(true);
+    setTimeout(() => {
+      if (onClose) {
+        onClose();
+      }
+      setIsExiting(false);
+    }, 300); // Match animation duration
   }, [onClose]);
 
   useEffect(() => {
@@ -104,21 +110,40 @@ export default function NotificationComponent({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-md w-full animate-in slide-in-from-right duration-300">
+    <div
+      className={`fixed top-4 right-4 z-50 max-w-md w-full transition-all duration-300 ease-out ${
+        isExiting ? "translate-x-[120%] opacity-0" : "translate-x-0 opacity-100"
+      }`}
+    >
       <div
-        className={`border rounded-lg shadow-lg p-4 ${getTypeStyles()}`}
+        className={`border rounded-lg shadow-2xl p-4 relative overflow-hidden transform transition-all duration-200 ${getTypeStyles()}`}
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {getIcon()}
-            <p className="font-medium">{message}</p>
+        {/* Progress bar */}
+        {duration > 0 && (
+          <div
+            className="absolute bottom-0 left-0 h-1 bg-white/50 rounded-full transition-all"
+            style={{
+              width: "100%",
+              animation: `shrink ${duration}ms linear forwards`,
+            }}
+          />
+        )}
+
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center space-x-3 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in zoom-in duration-300 delay-100">
+              {getIcon()}
+            </div>
+            <p className="font-medium animate-in fade-in slide-in-from-left-1 duration-300 delay-150">
+              {message}
+            </p>
           </div>
           <button
             onClick={handleClose}
-            className="ml-4 inline-flex text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+            className="ml-4 inline-flex text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-all duration-200 hover:rotate-90 hover:scale-110 active:scale-95"
             aria-label="Close notification"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -131,6 +156,17 @@ export default function NotificationComponent({
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes shrink {
+          from {
+            width: 100%;
+          }
+          to {
+            width: 0%;
+          }
+        }
+      `}</style>
     </div>
   );
 }

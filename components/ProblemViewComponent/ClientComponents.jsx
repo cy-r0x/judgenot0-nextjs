@@ -4,7 +4,9 @@ import CodeEditor from "@/components/EditorComponent/EditorComponent";
 import Button from "@/components/ButtonComponent/Button";
 import submissionModule from "@/api/submission/submission";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import NotificationComponent from "@/components/NotificationComponent/NotificationComponent";
+import { compileAndRun } from "@/api/compile_run/compileRun";
+import { getVerdictName } from "@/utils/verdictFormatter";
 
 // Client-side component for copying text to clipboard
 export function CopyButton({ text }) {
@@ -35,10 +37,17 @@ export function EditorSection({ problemData, contestId }) {
   const [code, setCode] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
 
   const [feedback, setFeedback] = useState({
     visible: false,
     message: "",
+  });
+
+  const [notification, setNotification] = useState({
+    visible: false,
+    message: "",
+    type: "info",
   });
 
   const router = useRouter();
@@ -58,6 +67,18 @@ export function EditorSection({ problemData, contestId }) {
   }, [feedback.visible]);
 
   const handleCompileRun = async () => {
+    if (!code.trim()) {
+      setNotification({
+        visible: true,
+        message: "Source code cannot be empty",
+        type: "error",
+      });
+      return;
+    }
+
+    setIsCompiling(true);
+    setNotification({ visible: false, message: "", type: "info" });
+
     const data = {
       submission_id: null,
       problem_id: null,
@@ -68,8 +89,36 @@ export function EditorSection({ problemData, contestId }) {
       memory_limit: problemData.memory_limit,
     };
 
-    const response = await axios.post("http://localhost:8080/run", data);
-    console.log(response.data);
+    const { data: responseData, error } = await compileAndRun(data);
+
+    setIsCompiling(false);
+
+    if (error) {
+      setNotification({
+        visible: true,
+        message: error,
+        type: "error",
+      });
+      return;
+    }
+
+    if (responseData && responseData.result) {
+      const verdictName = getVerdictName(responseData.result);
+      const notificationType =
+        responseData.result.toLowerCase() === "ac" ? "success" : "error";
+
+      setNotification({
+        visible: true,
+        message: `Sample: ${verdictName}`,
+        type: notificationType,
+      });
+    } else {
+      setNotification({
+        visible: true,
+        message: "Unexpected response from server",
+        type: "error",
+      });
+    }
   };
 
   const handleSubmit = async () => {
@@ -138,7 +187,11 @@ export function EditorSection({ problemData, contestId }) {
           </select>
         </div>
         <div className="flex justify-end gap-3 mt-3">
-          <Button name={"Compile and Run"} onClick={handleCompileRun} />
+          <Button
+            name={isCompiling ? "Compiling..." : "Compile and Run"}
+            onClick={handleCompileRun}
+            disabled={isCompiling}
+          />
           <Button
             name={isSubmitting ? "Submitting..." : "Submit"}
             onClick={handleSubmit}
@@ -150,24 +203,6 @@ export function EditorSection({ problemData, contestId }) {
         <CodeEditor
           handleChange={setCode}
           selectedLanguage={selectedLanguage}
-          basicSetup={{
-            lineNumbers: true,
-            highlightActiveLineGutter: true,
-            highlightSpecialChars: true,
-            foldGutter: true,
-            dropCursor: false,
-            allowMultipleSelections: false,
-            indentOnInput: false,
-            syntaxHighlighting: true,
-            bracketMatching: true,
-            rectangularSelection: false,
-            crosshairCursor: false,
-            highlightActiveLine: false,
-            highlightSelectionMatches: true,
-            closeBrackets: false,
-            autocompletion: false,
-            tabSize: 2,
-          }}
         />
       </div>
       {/* Result Banner */}
@@ -176,6 +211,14 @@ export function EditorSection({ problemData, contestId }) {
           {feedback.message}
         </div>
       ) : null}
+      {/* Notification */}
+      <NotificationComponent
+        message={notification.message}
+        type={notification.type}
+        isVisible={notification.visible}
+        onClose={() => setNotification({ ...notification, visible: false })}
+        duration={2000}
+      />
     </div>
   );
 }

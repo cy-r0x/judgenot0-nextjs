@@ -4,6 +4,8 @@
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const ENGINE_URL =
+  process.env.NEXT_PUBLIC_ENGINE_URL || "http://localhost:8080";
 
 /**
  * Create axios instance with default configuration
@@ -17,9 +19,48 @@ const apiClient = axios.create({
 });
 
 /**
+ * Create axios instance for engine API
+ */
+export const engineClient = axios.create({
+  baseURL: ENGINE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 60000, // 60 seconds timeout for code execution
+});
+
+/**
  * Request interceptor to add authentication token
  */
 apiClient.interceptors.request.use(
+  (config) => {
+    // Only access localStorage on client side
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      if (user) {
+        try {
+          const userData = JSON.parse(user);
+          if (userData.access_token) {
+            config.headers.Authorization = `Bearer ${userData.access_token}`;
+          }
+        } catch (error) {
+          console.error("Error parsing user data from localStorage:", error);
+          // Clear invalid data
+          localStorage.removeItem("user");
+        }
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * Request interceptor for engine client to add authentication token
+ */
+engineClient.interceptors.request.use(
   (config) => {
     // Only access localStorage on client side
     if (typeof window !== "undefined") {

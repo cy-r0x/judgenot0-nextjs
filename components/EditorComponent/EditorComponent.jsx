@@ -36,7 +36,7 @@ function CodeEditor({ handleChange, selectedLanguage }) {
         crosshairCursor: false,
         highlightActiveLine: false,
         highlightSelectionMatches: true,
-        closeBrackets: false,
+        closeBrackets: true,
         autocompletion: false,
         tabSize: 4,
       }}

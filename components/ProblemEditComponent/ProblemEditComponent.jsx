@@ -206,6 +206,7 @@ export default function ProblemEditComponent({ problemId }) {
                   setCurrentTestCaseType={setCurrentTestCaseType}
                   setCurrentTestCase={setCurrentTestCase}
                   setEditingIndex={setEditingIndex}
+                  showNotification={showNotification}
                 />
               )}
               {activeTab === 3 && (
@@ -239,6 +240,7 @@ export default function ProblemEditComponent({ problemId }) {
           problemData={problemData}
           setProblemData={setProblemData}
           editingIndex={editingIndex}
+          showNotification={showNotification}
         />
       )}
 

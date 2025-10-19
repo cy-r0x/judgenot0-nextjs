@@ -1,6 +1,7 @@
 "use client";
 import Button from "@/components/ButtonComponent/Button";
 import TestCaseItem from "../components/TestCaseItem";
+import problemModule from "@/api/problem/problem";
 
 export default function TestCasesTab({
   problemData,
@@ -9,6 +10,7 @@ export default function TestCasesTab({
   setCurrentTestCaseType,
   setCurrentTestCase,
   setEditingIndex,
+  showNotification,
 }) {
   const handleAddTestCase = (type) => {
     setCurrentTestCaseType(type);
@@ -33,26 +35,69 @@ export default function TestCasesTab({
     setShowTestCaseModal(true);
   };
 
-  const handleDeleteTestCase = (type, index) => {
-    setProblemData((prev) => {
-      const filteredTestCases = prev.test_cases.filter((tc) =>
-        type === "sample" ? tc.is_sample : !tc.is_sample
-      );
-      const testCaseToDelete = filteredTestCases[index];
+  const handleDeleteTestCase = async (type, index) => {
+    const filteredTestCases = problemData.test_cases.filter((tc) =>
+      type === "sample" ? tc.is_sample : !tc.is_sample
+    );
+    const testCaseToDelete = filteredTestCases[index];
 
-      // Find the actual index in the original array
-      const actualIndex = prev.test_cases.findIndex(
-        (tc) =>
-          tc.input === testCaseToDelete.input &&
-          tc.expected_output === testCaseToDelete.expected_output &&
-          tc.is_sample === testCaseToDelete.is_sample
+    // Find the actual index in the original array
+    const actualIndex = problemData.test_cases.findIndex(
+      (tc) =>
+        tc.input === testCaseToDelete.input &&
+        tc.expected_output === testCaseToDelete.expected_output &&
+        tc.is_sample === testCaseToDelete.is_sample
+    );
+
+    const testCaseId = problemData.test_cases[actualIndex]?.id;
+
+    // If the test case has an ID, delete it from the backend
+    if (testCaseId) {
+      const confirmDelete = window.confirm(
+        `Are you sure you want to delete this ${
+          type === "sample" ? "sample" : "regular"
+        } test case?`
       );
 
-      return {
+      if (!confirmDelete) {
+        return;
+      }
+
+      try {
+        const { data, error } = await problemModule.deleteTestCase(testCaseId);
+
+        if (error) {
+          showNotification?.(error, "error");
+          return;
+        }
+
+        if (data) {
+          // Remove from local state after successful deletion
+          setProblemData((prev) => ({
+            ...prev,
+            test_cases: prev.test_cases.filter((_, i) => i !== actualIndex),
+          }));
+          showNotification?.(
+            `${
+              type === "sample" ? "Sample" : "Regular"
+            } test case deleted successfully!`,
+            "success"
+          );
+        }
+      } catch (error) {
+        console.error("Error deleting test case:", error);
+        showNotification?.(
+          "Failed to delete test case. Please try again.",
+          "error"
+        );
+      }
+    } else {
+      // If no ID, just remove from local state (shouldn't happen with new API flow)
+      setProblemData((prev) => ({
         ...prev,
         test_cases: prev.test_cases.filter((_, i) => i !== actualIndex),
-      };
-    });
+      }));
+    }
   };
 
   return (
