@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 
 function Navbar() {
   const { isAuthenticated, user, logout, role } = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
 
   const handleLogout = () => {
@@ -32,7 +31,7 @@ function Navbar() {
             <Link href={"/"} key={"home-route"}>
               <p className="font-semibold text-md lg:text-lg cursor-pointer hover:text-orange-500">
                 <span className="transition-colors">Judge</span>
-                <span className="text-orange-500">Not0</span>
+                <span className="text-orange-500">!0</span>
               </p>
             </Link>
           </div>

@@ -8,6 +8,9 @@ import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <title>JudgeNot0 | An Online Judge</title>
+      </head>
       <body>
         <ErrorBoundary>
           <AuthProvider>
