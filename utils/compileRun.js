@@ -2,7 +2,7 @@
  * Compile and Run Utility
  * Handles code execution requests to the engine
  */
-import { engineClient, handleApiResponse } from "./apiClient";
+import apiClient, { handleApiResponse } from "./apiClient";
 import { API_ENDPOINTS } from "./constants";
 
 /**
@@ -18,7 +18,5 @@ import { API_ENDPOINTS } from "./constants";
  * @returns {Promise<{data?: any, error?: string}>}
  */
 export const compileAndRun = async (payload) => {
-  return handleApiResponse(
-    engineClient.post(API_ENDPOINTS.ENGINE_RUN, payload)
-  );
+  return handleApiResponse(apiClient.post(API_ENDPOINTS.ENGINE_RUN, payload));
 };
