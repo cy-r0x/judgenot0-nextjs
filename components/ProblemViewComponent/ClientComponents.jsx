@@ -35,7 +35,7 @@ export function CopyButton({ text }) {
 // Client-side component for the editor section
 export function EditorSection({ problemData, contestId }) {
   const [code, setCode] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState("cpp");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
 
@@ -181,9 +181,12 @@ export function EditorSection({ problemData, contestId }) {
             value={selectedLanguage}
             onChange={handleLanguageChange}
           >
-            <option value="cpp">C++</option>
-            <option value="java">Java</option>
-            <option value="python">Python</option>
+            <option value="" disabled>
+              Select Language
+            </option>
+            <option value="c">GNU GCC11</option>
+            <option value="cpp">GNU G++23</option>
+            <option value="py">Python 3.10</option>
           </select>
         </div>
         <div className="flex justify-end gap-3 mt-3">
