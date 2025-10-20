@@ -87,19 +87,16 @@ submissionModule.getSubmission = async (submissionId) => {
 
 /**
  * Get all submissions for the current user
- * @returns {Promise<{data?: Array, error?: string}>}
+ * @param {Object} params - Query parameters
+ * @param {number} params.page - Page number (optional, default: 1)
+ * @returns {Promise<{data?: Object, error?: string}>}
  */
-submissionModule.getSubmissions = async () => {
+submissionModule.getSubmissions = async ({ page = 1 } = {}) => {
   try {
-    const response = await apiClient.get(API_ENDPOINTS.SUBMISSIONS);
-    const submissions = response.data;
-
-    // Ensure submissions is always an array
-    if (!Array.isArray(submissions)) {
-      return { data: [] };
-    }
-
-    return { data: submissions };
+    const url = `${API_ENDPOINTS.SUBMISSIONS}?page=${page}`;
+    const response = await apiClient.get(url);
+    const data = response.data;
+    return { data: data };
   } catch (error) {
     const handledError = handleApiError(error, {
       context: "Get Submissions",

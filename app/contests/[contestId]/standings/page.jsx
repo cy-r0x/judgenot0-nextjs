@@ -15,22 +15,18 @@ import contestModule from "@/api/contest/contest";
 export default async function StandingsPage({ params }) {
   const { contestId } = await params;
 
-  // Fetch standings data (public endpoint)
+  // Fetch standings data (includes contest title)
   const { data: standingsData, error: standingsError } =
     await contestModule.getContestStandings(contestId);
 
-  // Fetch contest details for the title
-  const { data: contestData, error: contestError } =
-    await contestModule.getContest(contestId);
-
-  if (standingsError || contestError) {
+  if (standingsError) {
     return (
       <div className="min-h-screen">
         <Bar title="Standings" />
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-red-900/30 border border-red-500 rounded-lg px-6 py-4">
             <p className="text-red-300">
-              {standingsError || contestError || "Failed to load standings"}
+              {standingsError || "Failed to load standings"}
             </p>
           </div>
         </div>
@@ -38,7 +34,7 @@ export default async function StandingsPage({ params }) {
     );
   }
 
-  const contestTitle = contestData?.contest?.title || "Contest";
+  const contestTitle = standingsData?.contest_title || "Contest";
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-6">

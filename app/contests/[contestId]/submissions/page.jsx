@@ -18,12 +18,17 @@ import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import { getRelativeTime } from "@/utils/dateFormatter";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import { getVerdictName, getVerdictColor } from "@/utils/verdictFormatter";
+import Pagination from "@/components/Pagination/Pagination";
 
 export default function SubmissionsTable({ params }) {
   const [contestId, setContestId] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 10;
 
   useEffect(() => {
     // Unwrap params
@@ -37,18 +42,25 @@ export default function SubmissionsTable({ params }) {
 
     const fetchSubmissions = async () => {
       setLoading(true);
-      const { data, error } = await submissionModule.getSubmissions();
+      // Scroll to top when page changes
+      window.scrollTo({ top: 0, behavior: "smooth" });
 
+      const { data, error } = await submissionModule.getSubmissions({
+        page: currentPage,
+      });
+      console.log(data);
       if (error) {
         setError(error);
       } else {
-        setSubmissions(Array.isArray(data) ? data : []);
+        setSubmissions(Array.isArray(data.submissions) ? data.submissions : []);
+        setTotalPages(data.total_pages || 1);
+        setTotalItems(data.total_item || 0);
       }
       setLoading(false);
     };
 
     fetchSubmissions();
-  }, [contestId]);
+  }, [contestId, currentPage]);
 
   if (!contestId || loading) {
     return (
@@ -94,13 +106,11 @@ export default function SubmissionsTable({ params }) {
 
     switch (lowerVerdict) {
       case "ac":
-      case "accepted":
         return <MdOutlineDone className="text-green-500" title="Accepted" />;
       case "wa":
-      case "wrong answer":
         return <MdClose className="text-red-500" title="Wrong Answer" />;
       case "tle":
-      case "time limit exceeded":``
+        ``;
         return (
           <MdAccessTime
             className="text-purple-500"
@@ -108,26 +118,16 @@ export default function SubmissionsTable({ params }) {
           />
         );
       case "mle":
-      case "memory limit exceeded":
         return (
           <MdMemory className="text-orange-500" title="Memory Limit Exceeded" />
         );
       case "re":
-      case "runtime error":
         return <MdError className="text-pink-500" title="Runtime Error" />;
       case "ce":
-      case "compilation error":
         return (
           <MdClose className="text-yellow-500" title="Compilation Error" />
         );
       case "pending":
-        return (
-          <GoVersions
-            className="text-yellow-400 animate-pulse duration-1000"
-            title="Pending"
-          />
-        );
-      case "running":
         return (
           <MdLoop className="text-blue-500 animate-spin" title="Running" />
         );
@@ -287,6 +287,18 @@ export default function SubmissionsTable({ params }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Pagination */}
+      {submissions.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          limit={limit}
+          onPageChange={setCurrentPage}
+          itemName="submissions"
+        />
       )}
     </div>
   );

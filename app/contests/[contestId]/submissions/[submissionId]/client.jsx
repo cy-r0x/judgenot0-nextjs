@@ -29,7 +29,7 @@ export function SubmissionCodeViewer({ code, language }) {
     <div className="relative">
       <CodeMirror
         value={code}
-        height="calc(100vh - 350px)"
+        height="calc(100vh - 500px)"
         extensions={[lang]}
         theme={monokai}
         editable={false}
