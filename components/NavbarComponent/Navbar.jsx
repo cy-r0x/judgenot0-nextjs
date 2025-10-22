@@ -128,6 +128,14 @@ function Navbar() {
                       <span className="text-orange-500 font-medium">
                         {user?.full_name || user?.username || "User"}
                       </span>
+                      {user?.clan && (
+                        <>
+                          <br />
+                          <span className="text-xs text-zinc-500">
+                            {user.clan}
+                          </span>
+                        </>
+                      )}
                     </span>
                   </li>
 

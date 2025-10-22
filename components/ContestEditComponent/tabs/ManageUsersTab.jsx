@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/ButtonComponent/Button";
-import { MdAdd, MdDelete, MdSearch, MdPersonAdd } from "react-icons/md";
+import {
+  MdAdd,
+  MdDelete,
+  MdSearch,
+  MdPersonAdd,
+  MdUpload,
+  MdClose,
+  MdDownload,
+} from "react-icons/md";
 import userModule from "@/api/user/user";
-import axios from "axios";
+import apiClient from "@/utils/apiClient";
 import { getToken } from "@/utils/auth";
 
 export default function ManageUsersTab({
@@ -14,6 +22,13 @@ export default function ManageUsersTab({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddUser, setShowAddUser] = useState(false);
+  const [showCSVUpload, setShowCSVUpload] = useState(false);
+  const [csvData, setCSVData] = useState({
+    prefix: "",
+    clan_length: "",
+    file: null,
+  });
+  const [csvFileInputKey, setCSVFileInputKey] = useState(Date.now());
   const [newUser, setNewUser] = useState({
     full_name: "",
     username: "",
@@ -41,15 +56,7 @@ export default function ManageUsersTab({
       if (error) {
         showNotification(error, "error");
       } else if (data) {
-        // Map the API response to match our component's expected format
-        const mappedUsers = Array.isArray(data)
-          ? data.map((user) => ({
-              id: user.userId,
-              username: user.username,
-              full_name: user.full_name,
-            }))
-          : [];
-        setUsers(mappedUsers);
+        setUsers(data);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -132,16 +139,7 @@ export default function ManageUsersTab({
     try {
       setLoading(true);
 
-      const token = getToken();
-      const response = await axios.post(
-        `/api/users/delete/${userId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiClient.post(`/api/users/delete/${userId}`, {});
 
       if (response.status === 200) {
         setUsers((prev) => prev.filter((user) => user.id !== userId));
@@ -161,6 +159,117 @@ export default function ManageUsersTab({
     }
   };
 
+  const handleCSVInputChange = (e) => {
+    const { name, value } = e.target;
+    setCSVData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === "text/csv") {
+      setCSVData((prev) => ({
+        ...prev,
+        file: file,
+      }));
+    } else {
+      showNotification("Please select a valid CSV file", "error");
+      e.target.value = "";
+    }
+  };
+
+  const handleCSVUpload = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!csvData.prefix.trim()) {
+      showNotification("Please enter a username prefix", "error");
+      return;
+    }
+
+    if (!csvData.clan_length.trim()) {
+      showNotification("Please enter clan length", "error");
+      return;
+    }
+
+    if (!csvData.file) {
+      showNotification("Please select a CSV file", "error");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("prefix", csvData.prefix);
+      formData.append("clan_length", csvData.clan_length);
+      formData.append("contest_id", contestData.contest.id);
+      formData.append("file", csvData.file);
+
+      const { data, error } = await userModule.RegisterCSV(formData);
+
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
+        showNotification("Users registered successfully via CSV!", "success");
+        // Reset form
+        setCSVData({
+          prefix: "",
+          clan_length: "",
+          file: null,
+        });
+        setCSVFileInputKey(Date.now()); // Reset file input
+        setShowCSVUpload(false);
+        // Refresh users list
+        await fetchContestUsers();
+      }
+    } catch (error) {
+      console.error("Error uploading CSV:", error);
+      showNotification("Failed to upload CSV. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadUserCreds = async () => {
+    try {
+      setLoading(true);
+
+      const { data, error, filename } = await userModule.DownloadUserCredsCSV(
+        contestData.contest.id
+      );
+
+      if (error) {
+        showNotification(error, "error");
+      } else if (data) {
+        // Create a download link and trigger download
+        const url = window.URL.createObjectURL(new Blob([data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          filename || `contest_${contestData.contest.id}_users.csv`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        showNotification(
+          "User credentials CSV downloaded successfully!",
+          "success"
+        );
+      }
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+      showNotification("Failed to download CSV. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -170,20 +279,34 @@ export default function ManageUsersTab({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-white border-b pb-2 border-zinc-700">
-        Manage Contest Users
-      </h2>
+      <div className="flex justify-between items-center border-b pb-2 border-zinc-700">
+        <h2 className="text-xl font-bold text-white">Manage Contest Users</h2>
+        <Button
+          name="Download User Creds"
+          icon={<MdDownload />}
+          onClick={handleDownloadUserCreds}
+          disabled={loading || users.length === 0}
+        />
+      </div>
 
       {/* Add User Section */}
       <div className="bg-zinc-700/30 rounded-lg p-6 border border-zinc-600">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-white">Register Users</h3>
-          <Button
-            name="Add User"
-            icon={<MdAdd />}
-            onClick={() => setShowAddUser(!showAddUser)}
-            disabled={loading}
-          />
+          <div className="flex gap-2">
+            <Button
+              name="Upload CSV"
+              icon={<MdUpload />}
+              onClick={() => setShowCSVUpload(!showCSVUpload)}
+              disabled={loading}
+            />
+            <Button
+              name="Add User"
+              icon={<MdAdd />}
+              onClick={() => setShowAddUser(!showAddUser)}
+              disabled={loading}
+            />
+          </div>
         </div>
 
         {showAddUser && (
@@ -322,6 +445,104 @@ export default function ManageUsersTab({
             </div>
           </form>
         )}
+
+        {showCSVUpload && (
+          <form
+            onSubmit={handleCSVUpload}
+            className="space-y-4 border-t border-zinc-600 pt-4"
+          >
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label
+                  htmlFor="prefix"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Username Prefix *
+                </label>
+                <input
+                  type="text"
+                  id="prefix"
+                  name="prefix"
+                  value={csvData.prefix}
+                  onChange={handleCSVInputChange}
+                  className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="e.g., user, contestant"
+                  disabled={loading}
+                  required
+                />
+                <p className="text-xs text-zinc-400 mt-1">
+                  This prefix will be added to each username
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="clan_length"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Clan Length *
+                </label>
+                <input
+                  type="number"
+                  id="clan_length"
+                  name="clan_length"
+                  value={csvData.clan_length}
+                  onChange={handleCSVInputChange}
+                  className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="e.g., 4"
+                  min="1"
+                  disabled={loading}
+                  required
+                />
+                <p className="text-xs text-zinc-400 mt-1">
+                  Length of the clan identifier
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="csvFile"
+                  className="block text-sm font-medium text-zinc-300 mb-1"
+                >
+                  Select CSV File *
+                </label>
+                <input
+                  type="file"
+                  id="csvFile"
+                  name="csvFile"
+                  key={csvFileInputKey}
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="w-full px-3 py-2 bg-zinc-700 border border-zinc-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-orange-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-500 file:text-white hover:file:bg-orange-600"
+                  disabled={loading}
+                  required
+                />
+                {csvData.file && (
+                  <p className="text-xs text-green-400 mt-1">
+                    Selected: {csvData.file.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCSVUpload(false);
+                  setCSVData({ prefix: "", clan_length: "", file: null });
+                  setCSVFileInputKey(Date.now()); // Reset file input
+                }}
+                className="px-4 py-2 bg-zinc-600 text-white rounded-md hover:bg-zinc-500 transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <Button
+                name={loading ? "Uploading..." : "Upload CSV"}
+                type="submit"
+                disabled={loading}
+              />
+            </div>
+          </form>
+        )}
       </div>
 
       {/* Users List */}
@@ -361,6 +582,12 @@ export default function ManageUsersTab({
                     Username
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                    Room No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                    PC No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -387,7 +614,7 @@ export default function ManageUsersTab({
                             {user.full_name || user.username}
                           </div>
                           <div className="text-xs text-zinc-400">
-                            ID: {user.id}
+                            {user.clan}
                           </div>
                         </div>
                       </div>
@@ -395,6 +622,16 @@ export default function ManageUsersTab({
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-zinc-100">
                         {user.username}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-zinc-100">
+                        {user.room_no}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-zinc-100">
+                        {user.pc_no}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">

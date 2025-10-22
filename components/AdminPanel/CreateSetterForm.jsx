@@ -11,7 +11,6 @@ export default function CreateSetterForm({
   const [form, setForm] = useState({
     name: "",
     username: "",
-    email: "",
     password: "",
   });
 
@@ -24,7 +23,7 @@ export default function CreateSetterForm({
     await onSubmit(form);
     // Reset form on success
     if (!errorMessage) {
-      setForm({ name: "", username: "", email: "", password: "" });
+      setForm({ name: "", username: "", password: "" });
     }
   };
 
@@ -56,19 +55,6 @@ export default function CreateSetterForm({
               type="text"
               name="username"
               value={form.username}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-2 font-medium text-zinc-300 text-sm">
-              Setter Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-zinc-800/80 border border-zinc-700 rounded-lg text-zinc-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               required

@@ -128,6 +128,94 @@ userModule.getSetters = async () => {
 };
 
 /**
+ * Register users via CSV upload (Admin only)
+ * @param {FormData} formData - FormData containing prefix, clan_length, contest_id, and file
+ * @returns {Promise<{data?: Object, error?: string}>}
+ */
+userModule.RegisterCSV = async (formData) => {
+  try {
+    const response = await apiClient.post(
+      API_ENDPOINTS.REGISTER_CSV,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return { data: response.data };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "CSV User Registration",
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Insufficient permissions to register users" };
+    }
+    if (error.status === 400) {
+      return { error: "Invalid CSV file or form data" };
+    }
+    if (error.status === 422) {
+      return { error: "Invalid data in CSV file" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
+/**
+ * Download user credentials CSV for a contest (Admin only)
+ * @param {number} contestId - Contest ID
+ * @returns {Promise<{data?: Blob, error?: string, filename?: string}>}
+ */
+userModule.DownloadUserCredsCSV = async (contestId) => {
+  try {
+    const response = await apiClient.get(
+      API_ENDPOINTS.DOWNLOAD_USER_CREDS_CSV(contestId),
+      {
+        responseType: "blob",
+      }
+    );
+
+    // Extract filename from Content-Disposition header if available
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = `contest_${contestId}_users.csv`;
+
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+      if (filenameMatch && filenameMatch[1]) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    return { data: response.data, filename };
+  } catch (error) {
+    const handledError = handleApiError(error, {
+      context: "Download User Credentials CSV",
+      contestId,
+    });
+
+    if (error.status === 401) {
+      return { error: "Invalid or expired token" };
+    }
+    if (error.status === 403) {
+      return { error: "Insufficient permissions" };
+    }
+    if (error.status === 404) {
+      return { error: "CSV file not found for this contest" };
+    }
+    if (error.status === 400) {
+      return { error: "Contest ID is required" };
+    }
+
+    return { error: handledError.error };
+  }
+};
+
+/**
  * Logout user
  */
 userModule.Logout = () => {

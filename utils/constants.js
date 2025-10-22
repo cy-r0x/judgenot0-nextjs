@@ -42,6 +42,9 @@ export const API_ENDPOINTS = {
   // Users
   CONTEST_USERS: (contestId) => `/api/users/${contestId}`,
   SETTERS: () => "/api/users/setter",
+  REGISTER_CSV: "/api/users/register/csv",
+  DOWNLOAD_USER_CREDS_CSV: (contestId) =>
+    `/api/users/csv?contestId=${contestId}`,
 };
 
 // Local storage keys

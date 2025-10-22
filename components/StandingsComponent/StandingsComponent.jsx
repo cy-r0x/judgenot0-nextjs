@@ -108,7 +108,10 @@ export default function StandingsComponent({ standingsData }) {
                 {index + 1}
               </td>
               <td className="px-4 py-3 font-medium sticky left-[60px] bg-zinc-900 z-10">
-                {user.username}
+                <div>
+                  <p>{user.full_name}</p>
+                  <p className="text-sm">{user.clan}</p>
+                </div>
               </td>
               <td className="px-4 py-3 text-center font-semibold text-green-400">
                 {user.solved_count}

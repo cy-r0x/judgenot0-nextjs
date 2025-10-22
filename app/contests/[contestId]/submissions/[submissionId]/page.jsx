@@ -217,11 +217,11 @@ export default function SubmissionPage({ params }) {
             Language:{" "}
             <span className="text-white">
               {submissionData.language === "cpp"
-                ? "C++"
-                : submissionData.language === "python"
-                ? "Python"
-                : submissionData.language === "java"
-                ? "Java"
+                ? "GNU G++23"
+                : submissionData.language === "py"
+                ? "Python 3.10"
+                : submissionData.language === "c"
+                ? "GNU GCC11"
                 : submissionData.language}
             </span>
           </div>

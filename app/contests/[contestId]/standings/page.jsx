@@ -34,6 +34,7 @@ export default async function StandingsPage({ params }) {
     );
   }
 
+
   const contestTitle = standingsData?.contest_title || "Contest";
   return (
     <div className="min-h-screen">

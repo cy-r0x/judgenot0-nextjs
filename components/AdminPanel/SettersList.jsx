@@ -75,11 +75,11 @@ export default function SettersList({
           <tbody className="bg-zinc-800/30 divide-y divide-zinc-700/50">
             {setters.map((setter) => (
               <tr
-                key={setter.userId}
+                key={setter.id}
                 className="hover:bg-zinc-700/30 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
-                  {setter.userId}
+                  {setter.id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-zinc-100">

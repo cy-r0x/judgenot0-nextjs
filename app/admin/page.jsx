@@ -98,7 +98,6 @@ function AdminPanel() {
       const response = await userModule.Register({
         full_name: formData.name,
         username: formData.username,
-        email: formData.email,
         password: formData.password,
         role: "setter",
       });
