@@ -114,7 +114,7 @@ export default function ContestsList({
                       Edit
                     </button>
                   </Link>
-                  <Link href={`/submissions/${contest.id}`}>
+                  <Link href={`/admin/submissions/${contest.id}`}>
                     <button className="text-green-400 hover:text-green-300 transition-colors">
                       View Submissions
                     </button>
