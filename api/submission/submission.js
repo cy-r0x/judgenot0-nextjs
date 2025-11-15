@@ -119,9 +119,10 @@ submissionModule.getSubmissions = async ({ page = 1 } = {}) => {
 /**
  * Get submissions by contest ID
  * @param {number|string} contestId - Contest ID
- * @returns {Promise<{data?: Array, error?: string}>}
+ * @param {number} page - Page number (optional, default: 1)
+ * @returns {Promise<{data?: Object, error?: string}>}
  */
-submissionModule.getSubmissionsByContest = async (contestId) => {
+submissionModule.getSubmissionsByContest = async (contestId, page = 1) => {
   // Input validation
   if (!contestId) {
     return { error: "Contest ID is required" };
@@ -134,16 +135,11 @@ submissionModule.getSubmissionsByContest = async (contestId) => {
 
   try {
     const response = await apiClient.get(
-      `${API_ENDPOINTS.SUBMISSIONS}?contest_id=${numericId}`
+      API_ENDPOINTS.SUBMISSIONS_BY_CONTEST(numericId, page)
     );
-    const submissions = response.data;
+    const data = response.data;
 
-    // Ensure submissions is always an array
-    if (!Array.isArray(submissions)) {
-      return { data: [] };
-    }
-
-    return { data: submissions };
+    return { data: data };
   } catch (error) {
     const handledError = handleApiError(error, {
       context: "Get Contest Submissions",

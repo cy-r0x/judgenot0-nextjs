@@ -24,7 +24,7 @@ function Button({
   hoverColor,
   type = "button",
 }) {
-  const buttonClasses = `px-4 py-2 rounded-sm active:scale-95 cursor-pointer font-semibold 
+  const buttonClasses = `px-4 py-2 rounded-sm active:scale-95 text-white cursor-pointer font-semibold 
     ${bgColor || "bg-orange-500"} 
     ${hoverColor || "hover:bg-orange-600"}
     ${disabled ? "opacity-50 cursor-not-allowed" : ""}

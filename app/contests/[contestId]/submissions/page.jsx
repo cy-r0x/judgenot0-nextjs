@@ -20,7 +20,7 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 import { getVerdictName, getVerdictColor } from "@/utils/verdictFormatter";
 import Pagination from "@/components/Pagination/Pagination";
 
-export default function SubmissionsTable({ params }) {
+export default function SubmissionsTable({ isAdmin, params }) {
   const [contestId, setContestId] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +48,14 @@ export default function SubmissionsTable({ params }) {
       const { data, error } = await submissionModule.getSubmissions({
         page: currentPage,
       });
+
+      // const { data, error } = await submissionModule.getSubmissionsByContest(1);
+
       console.log(data);
       if (error) {
         setError(error);
       } else {
+        console.log(Array.isArray(data.submissions));
         setSubmissions(Array.isArray(data.submissions) ? data.submissions : []);
         setTotalPages(data.total_pages || 1);
         setTotalItems(data.total_item || 0);
@@ -140,7 +144,7 @@ export default function SubmissionsTable({ params }) {
     switch (language) {
       case "cpp":
         return "C++";
-      case "python":
+      case "py":
         return "Python";
       case "java":
         return "Java";

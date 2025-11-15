@@ -35,6 +35,8 @@ export const API_ENDPOINTS = {
   // Submissions
   SUBMISSIONS: "/api/submissions",
   SUBMISSION_BY_ID: (id) => `/api/submissions/${id}`,
+  SUBMISSIONS_BY_CONTEST: (contestId, page = 1) =>
+    `/api/submissions/all/${contestId}?page=${page}`,
 
   // Engine
   ENGINE_RUN: "/api/compile",
