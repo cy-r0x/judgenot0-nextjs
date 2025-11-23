@@ -10,6 +10,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <title>JudgeNot0 | An Online Judge</title>
+        <link rel="icon" type="image/x-icon" href="/0.png"></link>
       </head>
       <body>
         <ErrorBoundary>

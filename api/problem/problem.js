@@ -96,6 +96,9 @@ problemModule.updateProblem = async (problem) => {
       time_limit: parseInt(problem.time_limit),
       memory_limit: parseInt(problem.memory_limit),
       test_cases: problem.test_cases,
+      checker_type: problem.checker_type,
+      checker_strict_space: problem.checker_strict_space,
+      checker_precision: problem.checker_precision,
     });
 
     return { data: response.data };

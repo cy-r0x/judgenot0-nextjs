@@ -7,6 +7,7 @@ import DescriptionTab from "./tabs/DescriptionTab";
 import TestCasesTab from "./tabs/TestCasesTab";
 import LimitsTab from "./tabs/LimitsTab";
 import SolutionsTab from "./tabs/SolutionsTab";
+import CheckerTab from "./tabs/CheckerTab";
 import TestCaseModal from "./modals/TestCaseModal";
 import SolutionModal from "./modals/SolutionModal";
 import Button from "@/components/ButtonComponent/Button";
@@ -27,6 +28,9 @@ export default function ProblemEditComponent({ problemId }) {
     memory_limit: 256,
     test_cases: [],
     solutions: [],
+    checker_type: "string",
+    checker_strict_space: false,
+    checker_precision: null,
     created_by: 0,
     created_at: "",
   });
@@ -60,7 +64,16 @@ export default function ProblemEditComponent({ problemId }) {
 
         // Set the problem data (getProblem now handles test_cases normalization)
         if (data) {
-          setProblemData(data);
+          setProblemData((prev) => ({
+            ...prev,
+            ...data,
+            checker_type: data.checker_type || "string",
+            checker_strict_space:
+              data.checker_strict_space !== undefined
+                ? data.checker_strict_space
+                : false,
+            checker_precision: data.checker_precision || null,
+          }));
         }
       } catch (error) {
         console.error("Error fetching problem:", error);
@@ -113,7 +126,13 @@ export default function ProblemEditComponent({ problemId }) {
   };
 
   //solution has not been implemented yet!
-  const tabs = ["Basic Info", "Problem Description", "Test Cases", "Limits"];
+  const tabs = [
+    "Basic Info",
+    "Problem Description",
+    "Test Cases",
+    "Limits",
+    "Checker",
+  ];
 
   const handleTabChange = (index) => {
     setActiveTab(index);
@@ -216,6 +235,12 @@ export default function ProblemEditComponent({ problemId }) {
                 />
               )}
               {activeTab === 4 && (
+                <CheckerTab
+                  problemData={problemData}
+                  setProblemData={setProblemData}
+                />
+              )}
+              {activeTab === 5 && (
                 <SolutionsTab
                   problemData={problemData}
                   setProblemData={setProblemData}

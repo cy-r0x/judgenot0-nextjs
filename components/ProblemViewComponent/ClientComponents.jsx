@@ -39,11 +39,6 @@ export function EditorSection({ problemData, contestId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
 
-  const [feedback, setFeedback] = useState({
-    visible: false,
-    message: "",
-  });
-
   const [notification, setNotification] = useState({
     visible: false,
     message: "",
@@ -52,25 +47,20 @@ export function EditorSection({ problemData, contestId }) {
 
   const router = useRouter();
 
-  // Effect to hide the banner after 5 seconds
-  useEffect(() => {
-    let timer;
-    if (feedback.visible) {
-      timer = setTimeout(() => {
-        setFeedback((prev) => ({ ...prev, visible: false }));
-      }, 2000);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [feedback.visible]);
-
   const handleCompileRun = async () => {
     if (!code.trim()) {
       setNotification({
         visible: true,
         message: "Source code cannot be empty",
+        type: "error",
+      });
+      return;
+    }
+
+    if (selectedLanguage === "") {
+      setNotification({
+        visible: true,
+        message: "Select programming language",
         type: "error",
       });
       return;
@@ -123,15 +113,25 @@ export function EditorSection({ problemData, contestId }) {
 
   const handleSubmit = async () => {
     if (!code.trim()) {
-      setFeedback({
+      setNotification({
         visible: true,
         message: "Source code cannot be empty",
+        type: "error",
+      });
+      return;
+    }
+
+    if (selectedLanguage === "") {
+      setNotification({
+        visible: true,
+        message: "Select programming language",
+        type: "error",
       });
       return;
     }
 
     setIsSubmitting(true);
-    setFeedback((prev) => ({ ...prev, visible: false }));
+    setNotification({ visible: false, message: "", type: "info" });
 
     const activeContestId = contestId ?? problemData.contest_id;
 
@@ -143,9 +143,10 @@ export function EditorSection({ problemData, contestId }) {
     });
 
     if (error) {
-      setFeedback({
+      setNotification({
         visible: true,
         message: error,
+        type: "error",
       });
       setIsSubmitting(false);
       return;
@@ -155,9 +156,10 @@ export function EditorSection({ problemData, contestId }) {
       data?.submission_id || data?.id || data?.submission?.id;
 
     if (!submissionId) {
-      setFeedback({
+      setNotification({
         visible: true,
         message: "Submission succeeded but no submission ID returned",
+        type: "error",
       });
       setIsSubmitting(false);
       return;
@@ -208,12 +210,6 @@ export function EditorSection({ problemData, contestId }) {
           selectedLanguage={selectedLanguage}
         />
       </div>
-      {/* Result Banner */}
-      {feedback.visible ? (
-        <div className="mt-3 rounded border border-red-500 px-3 py-2 text-sm text-red-300">
-          {feedback.message}
-        </div>
-      ) : null}
       {/* Notification */}
       <NotificationComponent
         message={notification.message}
