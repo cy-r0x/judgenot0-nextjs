@@ -1,11 +1,12 @@
 import ProblemComponent from "@/components/ProblemListComponent/ProblemListComponent";
 import TimeCounterComponent from "@/components/TimeCounterComponent/TimeCounterComponent";
 import Bar from "@/components/BarComponent/BarComponent";
-import FormatMention from "@/handlers/mentionHandler";
 import Link from "next/link";
 import contestModule from "@/api/contest/contest";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import EmptyState from "@/components/EmptyState/EmptyState";
+
+export const revalidate = 0;
 
 async function ProblemList({ params }) {
   const { contestId } = await params;

@@ -201,6 +201,14 @@ function SetterPanel() {
                                 Edit
                               </button>
                             </Link>
+                            <Link
+                              href={`/preview/${problem.id}`}
+                              target="_blank"
+                            >
+                              <button className="text-green-400 hover:text-green-300 transition-colors hover:cursor-pointer">
+                                View
+                              </button>
+                            </Link>
                           </div>
                         </td>
                       </tr>

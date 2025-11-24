@@ -1,49 +1,25 @@
 import ProblemViewComponent from "../ProblemViewComponent/ProblemViewComponent";
-import Bar from "../BarComponent/BarComponent";
-import Button from "../ButtonComponent/Button";
-import Link from "next/link";
-export default async function ProblemPreviewComponent({ problem, problemID }) {
+import { EditorSection } from "./ClientComponents";
+
+export default function ProblemPreviewComponent({ problem, problemID }) {
   return (
-    <>
-      <div className="flex gap-8 px-32">
-        <div className="border-2 border-zinc-800 my-6">
-          <ProblemViewComponent problem={problem} />
-        </div>
-        <div className=" w-full h-48 mt-6 space-y-2">
-          <div>
-            <Bar title={"Editor Section"} />
-            <div className="border-2 border-zinc-800 flex gap-4 p-4 mt-2">
-              <Link href={`/edit/${problemID}`}>
-                <Button name={"Edit"} />
-              </Link>
-              <Button
-                name={"Share"}
-                bgColor="bg-zinc-800"
-                hoverColor="bg-zinc-700"
-              />
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-900">
+      {/* Main Content */}
+      <div className="flex-1 flex gap-6 px-32 py-6 overflow-hidden mx-auto w-full">
+        {/* Problem View Section */}
+        <section className="flex-[2] flex flex-col min-w-0">
+          <div className="flex-1 bg-zinc-800/50 rounded-lg border border-zinc-700 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <ProblemViewComponent problem={problem} />
             </div>
           </div>
-          <div>
-            <Bar title={"Submit"} />
-            <div className="space-y-2 border-2 border-zinc-800 p-4 mt-2">
-              <select
-                name="language"
-                id="language-select"
-                className="p-2 border rounded w-full bg-zinc-800"
-              >
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-                <option value="python">Python</option>
-              </select>
-              <input
-                type="file"
-                className="p-2 border-2 border-zinc-800 rounded"
-              ></input>
-              <Button name={"Submit"} />
-            </div>
-          </div>
-        </div>
+        </section>
+
+        {/* Editor Section */}
+        <section className="flex-1 flex flex-col min-w-0 h-fit">
+          <EditorSection problem={problem} problemID={problemID} />
+        </section>
       </div>
-    </>
+    </div>
   );
 }
