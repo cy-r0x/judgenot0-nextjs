@@ -65,7 +65,6 @@ export default function ProblemDescription({ params }) {
         }
       }
 
-      // Add contest_id to the problem response
       parsedData.contest_id = contestId;
 
       setProblemData(parsedData);

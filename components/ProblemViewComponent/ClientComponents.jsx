@@ -77,6 +77,9 @@ export function EditorSection({ problemData, contestId }) {
       testcases: problemData.test_cases || [],
       time_limit: problemData.time_limit,
       memory_limit: problemData.memory_limit,
+      checker_precision: problemData.checker_precision,
+      checker_strict_space: problemData.checker_strict_space,
+      checker_type: problemData.checker_type,
     };
 
     const { data: responseData, error } = await compileAndRun(data);
