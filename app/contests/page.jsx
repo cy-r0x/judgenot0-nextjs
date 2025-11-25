@@ -5,6 +5,7 @@ import Link from "next/link";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import EmptyState from "@/components/EmptyState/EmptyState";
 
+export const revalidate = 0;
 
 async function Contest() {
   const response = await contestModule.getContests();

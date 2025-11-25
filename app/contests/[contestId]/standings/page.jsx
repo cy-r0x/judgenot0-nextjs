@@ -1,10 +1,15 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Bar from "@/components/BarComponent/BarComponent";
 import StandingsComponent from "@/components/StandingsComponent/StandingsComponent";
 import contestModule from "@/api/contest/contest";
+import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 
 /**
- * Contest Standings Page - Server Component
+ * Contest Standings Page - Client Component
  * Displays the leaderboard for a specific contest
+ * Automatically refreshes standings data every 15 seconds
  * Public page - no authentication required
  *
  * @param {Object} props - Page props
@@ -12,12 +17,62 @@ import contestModule from "@/api/contest/contest";
  * @param {string} props.params.contestId - Contest ID from URL
  * @returns {JSX.Element} Standings page
  */
-export default async function StandingsPage({ params }) {
-  const { contestId } = await params;
+export default function StandingsPage({ params }) {
+  const [standingsData, setStandingsData] = useState(null);
+  const [standingsError, setStandingsError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [contestId, setContestId] = useState(null);
 
-  // Fetch standings data (includes contest title)
-  const { data: standingsData, error: standingsError } =
-    await contestModule.getContestStandings(contestId);
+  // Unwrap params
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setContestId(resolvedParams.contestId);
+    });
+  }, [params]);
+
+  // Fetch standings data
+  const fetchStandings = async () => {
+    if (!contestId) return;
+
+    try {
+      const { data, error } = await contestModule.getContestStandings(
+        contestId
+      );
+
+      if (error) {
+        setStandingsError(error);
+        setStandingsData(null);
+      } else {
+        setStandingsData(data);
+        setStandingsError(null);
+      }
+    } catch (err) {
+      setStandingsError("Failed to load standings");
+      setStandingsData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial fetch and setup interval for auto-refresh
+  useEffect(() => {
+    if (!contestId) return;
+
+    // Fetch immediately
+    fetchStandings();
+
+    // Set up interval to fetch every 15 seconds
+    const interval = setInterval(() => {
+      fetchStandings();
+    }, 15000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, [contestId]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   if (standingsError) {
     return (
@@ -33,7 +88,6 @@ export default async function StandingsPage({ params }) {
       </div>
     );
   }
-
 
   const contestTitle = standingsData?.contest_title || "Contest";
   return (
