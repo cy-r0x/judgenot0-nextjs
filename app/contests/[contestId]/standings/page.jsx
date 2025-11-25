@@ -71,7 +71,11 @@ export default function StandingsPage({ params }) {
   }, [contestId]);
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner text="Loading Standings..." />
+      </div>
+    );
   }
 
   if (standingsError) {

@@ -34,8 +34,12 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Trim whitespace from username and password
+    const trimmedUsername = formData.username.trim();
+    const trimmedPassword = formData.password.trim();
+
     // Validation
-    if (!formData.username || !formData.password) {
+    if (!trimmedUsername || !trimmedPassword) {
       setError("Please enter both username and password");
       return;
     }
@@ -44,10 +48,7 @@ function LoginPage() {
     setError("");
 
     try {
-      const response = await userModule.Login(
-        formData.username,
-        formData.password
-      );
+      const response = await userModule.Login(trimmedUsername, trimmedPassword);
 
       if (response.error) {
         setError(response.error);
