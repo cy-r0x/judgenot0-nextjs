@@ -101,6 +101,22 @@ export const formatDuration = (seconds) => {
 };
 
 /**
+ * Format countdown time in HH:MM:SS format
+ * @param {number} seconds - Duration in seconds
+ * @returns {string} Formatted time string (HH:MM:SS)
+ */
+export const formatCountdownTime = (seconds) => {
+  if (!seconds || isNaN(seconds) || seconds < 0) {
+    return "00:00:00";
+  }
+
+  const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+};
+
+/**
  * Get relative time string (e.g., "2 hours ago", "in 3 days")
  * @param {string|Date} dateValue - Date value
  * @returns {string} Relative time string

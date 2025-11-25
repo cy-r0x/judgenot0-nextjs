@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Bar from "@/components/BarComponent/BarComponent";
 import StandingsComponent from "@/components/StandingsComponent/StandingsComponent";
+import { CompactTimer } from "@/components/TimeCounterComponent/TimeCounterComponent";
 import contestModule from "@/api/contest/contest";
 import LoadingSpinner from "@/components/LoadingSpinner/LoadingSpinner";
 
@@ -108,6 +109,16 @@ export default function StandingsPage({ params }) {
             </h1>
           </div>
         </div>
+
+        {/* Compact Timer */}
+        {standingsData?.start_time && standingsData?.duration_seconds && (
+          <div className="mb-6">
+            <CompactTimer
+              startTime={standingsData.start_time}
+              durationSeconds={standingsData.duration_seconds}
+            />
+          </div>
+        )}
 
         {/* Standings Table */}
         <div className="bg-zinc-900 rounded-lg shadow-xl overflow-hidden border border-zinc-800">

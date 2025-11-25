@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { EditorSection } from "@/components/ProblemViewComponent/ClientComponents";
 import ProblemViewComponent from "@/components/ProblemViewComponent/ProblemViewComponent";
+import { CompactTimer } from "@/components/TimeCounterComponent/TimeCounterComponent";
 import problemModule from "@/api/problem/problem";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
@@ -106,11 +107,22 @@ export default function ProblemDescription({ params }) {
     <div className="flex flex-col h-[calc(100vh-70px)] overflow-hidden">
       <div className="flex flex-grow overflow-hidden">
         {/* Problem description - 60% width */}
-        <div className="w-[60%] overflow-auto">
+        <div className="w-[60%] overflow-auto border-r border-zinc-700">
           <ProblemViewComponent problem={problemData} contestId={contestId} />
         </div>
         {/* Editor section - 40% width - Client-side rendered */}
-        <EditorSection problemData={problemData} contestId={contestId} />
+        <div className="w-[40%] flex flex-col overflow-hidden">
+          {/* Timer at top of editor section */}
+          {problemData.start_time && problemData.duration_seconds && (
+            <CompactTimer
+              startTime={problemData.start_time}
+              durationSeconds={problemData.duration_seconds}
+            />
+          )}
+          <div className="flex-grow overflow-hidden">
+            <EditorSection problemData={problemData} contestId={contestId} />
+          </div>
+        </div>
       </div>
     </div>
   );

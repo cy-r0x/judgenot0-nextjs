@@ -176,7 +176,7 @@ export function EditorSection({ problemData, contestId }) {
   };
 
   return (
-    <div className="w-[40%] border-l flex flex-col px-4 py-2">
+    <div className="flex flex-col h-full px-4 py-2">
       <div className="mb-3 flex justify-between items-center">
         <div>
           <select

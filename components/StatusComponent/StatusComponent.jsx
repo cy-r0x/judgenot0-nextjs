@@ -41,7 +41,7 @@ function StatusComponent({ status }) {
 
   return (
     <div
-      className={`${config.color} relative py-2 px-3 rounded min-w-28 text-center font-medium`}
+      className={`${config.color} relative py-2 px-3 rounded min-w-28 text-center font-medium text-white inline-block`}
       role="status"
       aria-label={`Contest status: ${config.label}`}
     >
