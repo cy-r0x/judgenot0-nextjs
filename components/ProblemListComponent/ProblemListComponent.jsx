@@ -1,21 +1,69 @@
-import { RiGroupLine } from "react-icons/ri";
+import { RiGroupLine, RiCheckLine, RiCloseCircleLine } from "react-icons/ri";
 
 function ProblemComponent({ problemData, index }) {
-  return (
-    <>
-      <div className="border-4 border-zinc-800 px-3 py-3 bg-zinc-800 flex items-center justify-between hover:border-orange-500 cursor-pointer transition-all">
-        <div className="flex gap-5 items-center">
-          <p className="text-4xl font-semibold">
-            {String.fromCharCode("A".charCodeAt(0) + index - 1)}
-          </p>
-          <p>{problemData.title}</p>
+  const { solved, attempted, total_solvers, title } = problemData;
+
+  // Determine background color based on status
+  const getBackgroundColor = () => {
+    return "bg-zinc-800/50 hover:bg-zinc-800";
+  };
+
+  // Determine status badge
+  const getStatusBadge = () => {
+    if (solved) {
+      return (
+        <div className="flex items-center gap-1 px-2 py-1 bg-green-500/20 rounded text-green-400 text-sm font-medium">
+          <RiCheckLine size={16} />
+          <span>Solved</span>
         </div>
-        {/* <div className="flex gap-1 items-center">
-          <RiGroupLine size={20} />
-          <p>x20</p>
-        </div> */}
+      );
+    }
+    if (attempted) {
+      return (
+        <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 rounded text-yellow-400 text-sm font-medium">
+          <RiCloseCircleLine size={16} />
+          <span>Attempted</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div
+      className={`${getBackgroundColor()} border-4 border-zinc-800 hover:border-orange-500 px-4 py-4 flex items-center justify-between cursor-pointer transition-all duration-200 group`}
+    >
+      <div className="flex gap-4 items-center flex-1">
+        {/* Problem Index */}
+        <div
+          className={`text-4xl font-bold ${
+            solved
+              ? "text-green-400"
+              : attempted
+              ? "text-yellow-400"
+              : "text-zinc-500"
+          } group-hover:text-orange-400 transition-colors`}
+        >
+          {String.fromCharCode("A".charCodeAt(0) + index - 1)}
+        </div>
+
+        {/* Problem Title and Status */}
+        <div className="flex flex-col gap-2 flex-1">
+          <div className="flex items-center gap-3">
+            <p className="text-lg font-medium">{title}</p>
+            {getStatusBadge()}
+          </div>
+        </div>
       </div>
-    </>
+
+      {/* Solvers Count */}
+      <div className="flex items-center gap-2 px-3 py-1 bg-zinc-700/50 rounded justify-around">
+        <RiGroupLine size={18} className="text-zinc-400" />
+        <span className="text-sm font-medium text-zinc-300">
+          x{total_solvers || 0}
+        </span>
+      </div>
+    </div>
   );
 }
 

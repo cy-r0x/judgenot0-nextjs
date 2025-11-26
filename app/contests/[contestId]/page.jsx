@@ -1,34 +1,64 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import ProblemComponent from "@/components/ProblemListComponent/ProblemListComponent";
 import TimeCounterComponent from "@/components/TimeCounterComponent/TimeCounterComponent";
 import Bar from "@/components/BarComponent/BarComponent";
-import Link from "next/link";
-import contestModule from "@/api/contest/contest";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import EmptyState from "@/components/EmptyState/EmptyState";
+import PageLoading from "@/components/LoadingSpinner/PageLoading";
+import contestModule from "@/api/contest/contest";
+import { withAuth } from "@/components/HOC/withAuth";
 
-export const revalidate = 0;
+function ProblemList() {
+  const params = useParams();
+  const contestId = params.contestId;
 
-async function ProblemList({ params }) {
-  const { contestId } = await params;
-  const response = await contestModule.getContest(contestId);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState({ contest: null, problems: [] });
 
-  // Handle error case
-  if (response.error) {
+  useEffect(() => {
+    const fetchContestData = async () => {
+      if (!contestId) return;
+
+      setLoading(true);
+      try {
+        const response = await contestModule.getContest(contestId);
+
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setData(response.data);
+        }
+      } catch (err) {
+        setError("Failed to load contest data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContestData();
+  }, [contestId]);
+
+  if (loading) {
+    return <PageLoading text="Loading contest..." />;
+  }
+
+  if (error) {
     return (
       <div className="mx-8 my-4">
         <Bar title={"Error"} />
         <div className="mt-6">
-          <ErrorMessage
-            message={response.error}
-            type="error"
-            fullWidth={true}
-          />
+          <ErrorMessage message={error} type="error" fullWidth={true} />
         </div>
       </div>
     );
   }
 
-  const { contest, problems } = response.data;
+  const { contest, problems } = data;
 
   // Calculate end time from start_time and duration_seconds
   const startTime = new Date(contest.start_time).getTime() / 1000; // Convert to Unix timestamp
@@ -81,4 +111,4 @@ async function ProblemList({ params }) {
   );
 }
 
-export default ProblemList;
+export default withAuth(ProblemList);

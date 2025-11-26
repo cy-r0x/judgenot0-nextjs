@@ -1,5 +1,7 @@
 "use client";
 
+import { RiTrophyFill, RiMedalFill, RiStarFill } from "react-icons/ri";
+
 /**
  * Standings Component - Display contest leaderboard
  *
@@ -11,12 +13,21 @@
  * @returns {JSX.Element} Standings table component
  */
 export default function StandingsComponent({ standingsData }) {
-  const { total_problem_count, standings } = standingsData;
+  const { total_problem_count, standings, report } = standingsData;
 
   // Generate problem letters (A, B, C, ...)
   const problemLetters = Array.from({ length: total_problem_count }, (_, i) =>
     String.fromCharCode(65 + i)
   );
+
+  // Helper function to get report stats for a problem
+  const getProblemStats = (problemIndex) => {
+    const problemNumber = problemIndex + 1;
+    if (report && report[problemNumber]) {
+      return report[problemNumber];
+    }
+    return { solved: 0, attempted: 0 };
+  };
 
   // Helper function to get problem data for a user
   const getProblemData = (problems, problemIndex) => {
@@ -26,7 +37,7 @@ export default function StandingsComponent({ standingsData }) {
   // Helper function to format problem cell
   const formatProblemCell = (problemData) => {
     if (!problemData) {
-      return { display: "-", className: "" };
+      return { display: "-", className: "text-zinc-600" };
     }
 
     if (problemData.solved) {
@@ -35,32 +46,61 @@ export default function StandingsComponent({ standingsData }) {
 
       return {
         display: (
-          <div className="flex flex-col items-center">
-            <span className="font-semibold text-green-400 flex items-center gap-1">
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="font-bold text-green-400 flex items-center gap-1">
               {problemData.first_blood && (
-                <span className="text-yellow-400">★</span>
+                <RiStarFill className="text-yellow-400 text-lg" />
               )}
-              <span>+{attempts && attempts}</span>
+              <span className="text-sm">+{attempts || ""}</span>
             </span>
-            <span className="text-xs text-zinc-400">{penalty}</span>
+            <span className="text-xs text-zinc-500">{penalty}'</span>
           </div>
         ),
-        className: "bg-green-900/30 hover:bg-green-900/50",
+        className: problemData.first_blood
+          ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30 border text-green-400"
+          : "bg-green-500/10 text-green-400",
       };
     } else if (problemData.attempts > 0) {
       return {
         display: (
-          <div className="flex flex-col items-center">
-            <span className="font-semibold text-red-400">
+          <div className="flex items-center justify-center">
+            <span className="font-bold text-red-400 text-sm">
               -{problemData.attempts}
             </span>
           </div>
         ),
-        className: "bg-red-900/30 hover:bg-red-900/50",
+        className: "bg-red-500/10 text-red-400",
       };
     }
 
-    return { display: "-", className: "" };
+    return { display: "·", className: "text-zinc-600" };
+  };
+
+  // Get rank badge
+  const getRankBadge = (rank) => {
+    if (rank === 1) {
+      return (
+        <div className="flex items-center gap-1">
+          <RiTrophyFill className="text-yellow-400 text-xl" />
+          <span className="font-bold text-yellow-400">1</span>
+        </div>
+      );
+    } else if (rank === 2) {
+      return (
+        <div className="flex items-center gap-1">
+          <RiMedalFill className="text-gray-400 text-xl" />
+          <span className="font-bold text-gray-400">2</span>
+        </div>
+      );
+    } else if (rank === 3) {
+      return (
+        <div className="flex items-center gap-1">
+          <RiMedalFill className="text-amber-600 text-xl" />
+          <span className="font-bold text-amber-600">3</span>
+        </div>
+      );
+    }
+    return <span className="font-semibold text-zinc-400">{rank}</span>;
   };
 
   if (!standings || standings.length === 0) {
@@ -75,65 +115,93 @@ export default function StandingsComponent({ standingsData }) {
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-zinc-800 border-b-2 border-orange-500">
-            <th className="px-4 py-3 text-left font-semibold text-sm sticky left-0 bg-zinc-800 z-10">
-              Rank
+          <tr className="bg-zinc-800/80 border-b border-zinc-700">
+            <th className="px-4 py-4 text-center font-bold text-xs uppercase tracking-wider text-zinc-400 sticky left-0 bg-zinc-800/80 z-10 w-16">
+              #
             </th>
-            <th className="px-4 py-3 text-left font-semibold text-sm sticky left-[60px] bg-zinc-800 z-10 min-w-[200px]">
-              Username
+            <th className="px-4 py-4 text-left font-bold text-xs uppercase tracking-wider text-zinc-400 sticky left-16 bg-zinc-800/80 z-10 min-w-[250px]">
+              Participant
             </th>
-            <th className="px-4 py-3 text-center font-semibold text-sm">
-              Solved
+            <th className="px-4 py-4 text-center font-bold text-xs uppercase tracking-wider text-zinc-400 w-20">
+              <div className="flex flex-col items-center">
+                <span>Solved</span>
+              </div>
             </th>
-            <th className="px-4 py-3 text-center font-semibold text-sm">
-              Penalty
+            <th className="px-4 py-4 text-center font-bold text-xs uppercase tracking-wider text-zinc-400 w-24">
+              <div className="flex flex-col items-center">
+                <span>Penalty</span>
+              </div>
             </th>
-            {problemLetters.map((letter, index) => (
-              <th
-                key={index}
-                className="px-4 py-3 text-center font-semibold text-sm min-w-[80px]"
-              >
-                {letter}
-              </th>
-            ))}
+            {problemLetters.map((letter, index) => {
+              const stats = getProblemStats(index);
+              return (
+                <th
+                  key={index}
+                  className="px-3 py-4 text-center font-bold text-sm text-zinc-300 min-w-[70px] border-l border-zinc-700/50"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>{letter}</span>
+                    <span className="text-xs text-zinc-500 font-normal">
+                      {stats.solved}/{stats.attempted}
+                    </span>
+                  </div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
-        <tbody>
-          {standings.map((user, index) => (
-            <tr
-              key={user.user_id}
-              className="border-b border-zinc-700 hover:bg-zinc-800/50 transition-colors"
-            >
-              <td className="px-4 py-3 text-center font-semibold sticky left-0 bg-zinc-900 z-10">
-                {index + 1}
-              </td>
-              <td className="px-4 py-3 font-medium sticky left-[60px] bg-zinc-900 z-10">
-                <div>
-                  <p>{user.full_name}</p>
-                  <p className="text-sm">{user.clan}</p>
-                </div>
-              </td>
-              <td className="px-4 py-3 text-center font-semibold text-green-400">
-                {user.solved_count}
-              </td>
-              <td className="px-4 py-3 text-center font-medium text-zinc-300">
-                {user.total_penalty}
-              </td>
-              {problemLetters.map((_, problemIndex) => {
-                const problemData = getProblemData(user.problems, problemIndex);
-                const cellData = formatProblemCell(problemData);
+        <tbody className="divide-y divide-zinc-800/50">
+          {standings.map((user, index) => {
+            const rank = index + 1;
+            const isTopThree = rank <= 3;
 
-                return (
-                  <td
-                    key={problemIndex}
-                    className={`px-4 py-3 text-center transition-colors ${cellData.className}`}
-                  >
-                    {cellData.display}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+            return (
+              <tr
+                key={user.user_id}
+                className={`hover:bg-zinc-800/30 transition-colors ${
+                  isTopThree ? "bg-zinc-800/20" : ""
+                }`}
+              >
+                <td className="px-4 py-3 text-center sticky left-0 bg-zinc-900 z-10">
+                  {getRankBadge(rank)}
+                </td>
+                <td className="px-4 py-3 sticky left-16 bg-zinc-900 z-10">
+                  <div className="flex flex-col">
+                    <p className="font-semibold text-zinc-100 text-sm">
+                      {user.full_name}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{user.clan}</p>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span className="inline-flex items-center justify-center font-bold text-lg text-green-400 bg-green-500/10 rounded px-3 py-1">
+                    {user.solved_count}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span className="font-semibold text-zinc-300 text-sm">
+                    {user.total_penalty}
+                  </span>
+                </td>
+                {problemLetters.map((_, problemIndex) => {
+                  const problemData = getProblemData(
+                    user.problems,
+                    problemIndex
+                  );
+                  const cellData = formatProblemCell(problemData);
+
+                  return (
+                    <td
+                      key={problemIndex}
+                      className={`px-3 py-3 text-center transition-all border-l border-zinc-800/50 ${cellData.className}`}
+                    >
+                      {cellData.display}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
