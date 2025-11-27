@@ -1,5 +1,5 @@
 # Multi-stage build for minimal image size
-FROM node:20-alpine AS base
+FROM node:current-alpine3.21 AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -8,6 +8,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
+RUN npm i
 RUN npm ci
 
 # Rebuild the source code only when needed
