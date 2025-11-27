@@ -10,7 +10,8 @@ import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import contestModule from "@/api/contest/contest";
-import { withAuth } from "@/components/HOC/withAuth";
+// This page is intended to be public (no auth required)
+// Remove the withAuth wrapper so unauthenticated users can view it
 
 function ProblemList() {
   const params = useParams();
@@ -27,7 +28,7 @@ function ProblemList() {
       setLoading(true);
       try {
         const response = await contestModule.getContest(contestId);
-
+        console.log(response);
         if (response.error) {
           setError(response.error);
         } else {
@@ -111,4 +112,4 @@ function ProblemList() {
   );
 }
 
-export default withAuth(ProblemList);
+export default ProblemList;
