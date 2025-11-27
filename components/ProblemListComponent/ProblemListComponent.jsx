@@ -3,11 +3,6 @@ import { RiGroupLine, RiCheckLine, RiCloseCircleLine } from "react-icons/ri";
 function ProblemComponent({ problemData, index }) {
   const { solved, attempted, total_solvers, title } = problemData;
 
-  // Determine background color based on status
-  const getBackgroundColor = () => {
-    return "bg-zinc-800/50 hover:bg-zinc-800";
-  };
-
   // Determine status badge
   const getStatusBadge = () => {
     if (solved) {
@@ -31,7 +26,7 @@ function ProblemComponent({ problemData, index }) {
 
   return (
     <div
-      className={`${getBackgroundColor()} border-4 border-zinc-800 hover:border-orange-500 px-4 py-4 flex items-center justify-between cursor-pointer transition-all duration-200 group`}
+      className={`bg-zinc-800 border-4 border-zinc-800 hover:border-orange-500 px-4 py-4 flex items-center justify-between cursor-pointer transition-all duration-200 group`}
     >
       <div className="flex gap-4 items-center flex-1">
         {/* Problem Index */}
@@ -59,7 +54,7 @@ function ProblemComponent({ problemData, index }) {
       {/* Solvers Count */}
       <div className="flex items-center gap-2 px-3 py-1 bg-zinc-700/50 rounded justify-around">
         <RiGroupLine size={18} className="text-zinc-400" />
-        <span className="text-sm font-medium text-zinc-300">
+        <span className="text-base font-medium text-zinc-300">
           x{total_solvers || 0}
         </span>
       </div>
