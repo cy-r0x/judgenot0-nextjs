@@ -12,11 +12,6 @@ export default function App() {
 
   useEffect(() => {
     if (!loading) {
-      if (!isAuthenticated()) {
-        router.push("/login");
-        return;
-      }
-
       // Redirect based on role
       if (role === USER_ROLES.ADMIN) {
         router.push("/admin");

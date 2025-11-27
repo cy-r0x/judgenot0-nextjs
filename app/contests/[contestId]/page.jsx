@@ -10,8 +10,6 @@ import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import contestModule from "@/api/contest/contest";
-// This page is intended to be public (no auth required)
-// Remove the withAuth wrapper so unauthenticated users can view it
 
 function ProblemList() {
   const params = useParams();
