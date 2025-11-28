@@ -251,9 +251,15 @@ contestModule.getContestProblems = async (contestId) => {
 /**
  * Get standings for a contest
  * @param {number|string} contestId - Contest ID
+ * @param {number} page - Page number (default: 1)
+ * @param {number} limit - Items per page (default: 100)
  * @returns {Promise<{data?: Object, error?: string}>}
  */
-contestModule.getContestStandings = async (contestId) => {
+contestModule.getContestStandings = async (
+  contestId,
+  page = 1,
+  limit = 100
+) => {
   // Input validation
   if (!contestId) {
     return { error: "Contest ID is required" };
@@ -266,7 +272,9 @@ contestModule.getContestStandings = async (contestId) => {
 
   try {
     const response = await apiClient.get(
-      API_ENDPOINTS.CONTEST_STANDINGS(numericId)
+      `${API_ENDPOINTS.CONTEST_STANDINGS(
+        numericId
+      )}?page=${page}&limit=${limit}`
     );
 
     return { data: response.data };

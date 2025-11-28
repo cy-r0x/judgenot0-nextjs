@@ -13,7 +13,8 @@ import { RiTrophyFill, RiMedalFill, RiStarFill } from "react-icons/ri";
  * @returns {JSX.Element} Standings table component
  */
 export default function StandingsComponent({ standingsData }) {
-  const { total_problem_count, standings, report } = standingsData;
+  const { total_problem_count, standings, problem_solve_status } =
+    standingsData;
 
   // Generate problem letters (A, B, C, ...)
   const problemLetters = Array.from({ length: total_problem_count }, (_, i) =>
@@ -23,8 +24,8 @@ export default function StandingsComponent({ standingsData }) {
   // Helper function to get report stats for a problem
   const getProblemStats = (problemIndex) => {
     const problemNumber = problemIndex + 1;
-    if (report && report[problemNumber]) {
-      return report[problemNumber];
+    if (problem_solve_status && problem_solve_status[problemNumber]) {
+      return problem_solve_status[problemNumber];
     }
     return { solved: 0, attempted: 0 };
   };
