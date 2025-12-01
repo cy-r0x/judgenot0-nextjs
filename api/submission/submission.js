@@ -89,11 +89,15 @@ submissionModule.getSubmission = async (submissionId) => {
  * Get all submissions for the current user
  * @param {Object} params - Query parameters
  * @param {number} params.page - Page number (optional, default: 1)
+ * @param {number} params.limit - Results per page (optional, 20-100)
+ * @param {string} params.verdict - Filter by verdict (optional)
  * @returns {Promise<{data?: Object, error?: string}>}
  */
-submissionModule.getSubmissions = async ({ page = 1 } = {}) => {
+submissionModule.getSubmissions = async ({ page = 1, limit, verdict } = {}) => {
   try {
-    const url = `${API_ENDPOINTS.SUBMISSIONS}?page=${page}`;
+    let url = `${API_ENDPOINTS.SUBMISSIONS}?page=${page}`;
+    if (limit) url += `&limit=${limit}`;
+    if (verdict) url += `&verdict=${verdict}`;
     const response = await apiClient.get(url);
     const data = response.data;
     return { data: data };
@@ -120,9 +124,16 @@ submissionModule.getSubmissions = async ({ page = 1 } = {}) => {
  * Get submissions by contest ID
  * @param {number|string} contestId - Contest ID
  * @param {number} page - Page number (optional, default: 1)
+ * @param {number} limit - Results per page (optional, 20-100)
+ * @param {string} verdict - Filter by verdict (optional)
  * @returns {Promise<{data?: Object, error?: string}>}
  */
-submissionModule.getSubmissionsByContest = async (contestId, page = 1) => {
+submissionModule.getSubmissionsByContest = async (
+  contestId,
+  page = 1,
+  limit,
+  verdict
+) => {
   // Input validation
   if (!contestId) {
     return { error: "Contest ID is required" };
@@ -134,9 +145,14 @@ submissionModule.getSubmissionsByContest = async (contestId, page = 1) => {
   }
 
   try {
-    const response = await apiClient.get(
-      API_ENDPOINTS.SUBMISSIONS_BY_CONTEST(numericId, page)
-    );
+    let url = API_ENDPOINTS.SUBMISSIONS_BY_CONTEST(numericId, page);
+    const queryParams = [];
+    if (limit) queryParams.push(`limit=${limit}`);
+    if (verdict) queryParams.push(`verdict=${verdict}`);
+    if (queryParams.length > 0) {
+      url += (url.includes("?") ? "&" : "?") + queryParams.join("&");
+    }
+    const response = await apiClient.get(url);
     const data = response.data;
 
     return { data: data };

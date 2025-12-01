@@ -28,7 +28,8 @@ export default function SubmissionsTable({ isAdmin, params }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const limit = 10;
+  const [limit, setLimit] = useState(20);
+  const [verdict, setVerdict] = useState("");
 
   useEffect(() => {
     // Unwrap params
@@ -47,6 +48,8 @@ export default function SubmissionsTable({ isAdmin, params }) {
 
       const { data, error } = await submissionModule.getSubmissions({
         page: currentPage,
+        limit,
+        verdict: verdict || undefined,
       });
 
       // const { data, error } = await submissionModule.getSubmissionsByContest(1);
@@ -64,7 +67,7 @@ export default function SubmissionsTable({ isAdmin, params }) {
     };
 
     fetchSubmissions();
-  }, [contestId, currentPage]);
+  }, [contestId, currentPage, limit, verdict]);
 
   if (!contestId || loading) {
     return (
@@ -116,27 +119,20 @@ export default function SubmissionsTable({ isAdmin, params }) {
       case "tle":
         ``;
         return (
-          <MdAccessTime
-            className="text-purple-500"
-            title="Time Limit Exceeded"
-          />
+          <MdAccessTime className="text-red-500" title="Time Limit Exceeded" />
         );
       case "mle":
         return (
-          <MdMemory className="text-orange-500" title="Memory Limit Exceeded" />
+          <MdMemory className="text-red-500" title="Memory Limit Exceeded" />
         );
       case "re":
-        return <MdError className="text-pink-500" title="Runtime Error" />;
+        return <MdClose className="text-red-500" title="Runtime Error" />;
       case "ce":
-        return (
-          <MdClose className="text-yellow-500" title="Compilation Error" />
-        );
+        return <MdClose className="text-red-500" title="Compilation Error" />;
       case "pending":
-        return (
-          <MdLoop className="text-blue-500 animate-spin" title="Running" />
-        );
+        return <MdLoop className="text-red-500 animate-spin" title="Running" />;
       default:
-        return <MdClose className="text-gray-500" title={verdict} />;
+        return <MdClose className="text-red-500" title={verdict} />;
     }
   };
 
@@ -179,6 +175,54 @@ export default function SubmissionsTable({ isAdmin, params }) {
       </div>
 
       <h2 className="text-2xl font-bold mb-6">Contest Submissions</h2>
+
+      {/* Filter Controls */}
+      <div className="mb-6 bg-zinc-900 rounded-lg border-2 border-zinc-800 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Verdict Filter */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              Filter by Verdict
+            </label>
+            <select
+              value={verdict}
+              onChange={(e) => {
+                setVerdict(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="">All Verdicts</option>
+              <option value="ac">Accepted</option>
+              <option value="wa">Wrong Answer</option>
+              <option value="tle">Time Limit Exceeded</option>
+              <option value="mle">Memory Limit Exceeded</option>
+              <option value="re">Runtime Error</option>
+              <option value="ce">Compilation Error</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+
+          {/* Limit Filter */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-300 mb-2">
+              Results Per Page
+            </label>
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       {submissions.length === 0 ? (
         <EmptyState
@@ -265,9 +309,11 @@ export default function SubmissionsTable({ isAdmin, params }) {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      {getStatusIcon(item.verdict)}
+                      <span className="text-base">
+                        {getStatusIcon(item.verdict)}
+                      </span>
                       <span
-                        className={`font-medium ${getVerdictColor(
+                        className={`font-medium text-sm ${getVerdictColor(
                           item.verdict
                         )}`}
                       >
