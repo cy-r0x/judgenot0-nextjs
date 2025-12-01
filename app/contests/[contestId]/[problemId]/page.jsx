@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { EditorSection } from "@/components/ProblemViewComponent/ClientComponents";
 import ProblemViewComponent from "@/components/ProblemViewComponent/ProblemViewComponent";
 import { CompactTimer } from "@/components/TimeCounterComponent/TimeCounterComponent";
@@ -9,19 +9,10 @@ import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 
 export default function ProblemDescription({ params }) {
-  const [contestId, setContestId] = useState(null);
-  const [problemId, setProblemId] = useState(null);
+  const { contestId, problemId } = use(params);
   const [problemData, setProblemData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Unwrap params
-    Promise.resolve(params).then(({ contestId, problemId }) => {
-      setContestId(contestId);
-      setProblemId(problemId);
-    });
-  }, [params]);
 
   useEffect(() => {
     if (!problemId) return;

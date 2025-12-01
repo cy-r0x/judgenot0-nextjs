@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { FaUser, FaClock, FaMemory } from "react-icons/fa";
 import { GoFileCode, GoVersions, GoHash } from "react-icons/go";
 import {
@@ -17,11 +17,15 @@ import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import { getRelativeTime } from "@/utils/dateFormatter";
 import EmptyState from "@/components/EmptyState/EmptyState";
-import { getVerdictName, getVerdictColor } from "@/utils/verdictFormatter";
+import {
+  getVerdictName,
+  getVerdictColor,
+  getVerdictIcon,
+} from "@/utils/verdictFormatter";
 import Pagination from "@/components/Pagination/Pagination";
 
 export default function SubmissionsTable({ isAdmin, params }) {
-  const [contestId, setContestId] = useState(null);
+  const { contestId } = use(params);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,13 +34,6 @@ export default function SubmissionsTable({ isAdmin, params }) {
   const [totalItems, setTotalItems] = useState(0);
   const [limit, setLimit] = useState(20);
   const [verdict, setVerdict] = useState("");
-
-  useEffect(() => {
-    // Unwrap params
-    Promise.resolve(params).then(({ contestId }) => {
-      setContestId(contestId);
-    });
-  }, [params]);
 
   useEffect(() => {
     if (!contestId) return;
@@ -107,34 +104,6 @@ export default function SubmissionsTable({ isAdmin, params }) {
       </div>
     );
   }
-
-  const getStatusIcon = (verdict) => {
-    const lowerVerdict = verdict?.toLowerCase();
-
-    switch (lowerVerdict) {
-      case "ac":
-        return <MdOutlineDone className="text-green-500" title="Accepted" />;
-      case "wa":
-        return <MdClose className="text-red-500" title="Wrong Answer" />;
-      case "tle":
-        ``;
-        return (
-          <MdAccessTime className="text-red-500" title="Time Limit Exceeded" />
-        );
-      case "mle":
-        return (
-          <MdMemory className="text-red-500" title="Memory Limit Exceeded" />
-        );
-      case "re":
-        return <MdClose className="text-red-500" title="Runtime Error" />;
-      case "ce":
-        return <MdClose className="text-red-500" title="Compilation Error" />;
-      case "pending":
-        return <MdLoop className="text-red-500 animate-spin" title="Running" />;
-      default:
-        return <MdClose className="text-red-500" title={verdict} />;
-    }
-  };
 
   const getLanguageDisplay = (language) => {
     switch (language) {
@@ -310,7 +279,13 @@ export default function SubmissionsTable({ isAdmin, params }) {
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <span className="text-base">
-                        {getStatusIcon(item.verdict)}
+                        {getVerdictIcon(item.verdict, {
+                          MdOutlineDone,
+                          MdClose,
+                          MdAccessTime,
+                          MdMemory,
+                          MdLoop,
+                        })}
                       </span>
                       <span
                         className={`font-medium text-sm ${getVerdictColor(

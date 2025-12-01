@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import ProblemComponent from "@/components/ProblemListComponent/ProblemListComponent";
 import TimeCounterComponent from "@/components/TimeCounterComponent/TimeCounterComponent";
@@ -11,9 +10,8 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import contestModule from "@/api/contest/contest";
 
-function ProblemList() {
-  const params = useParams();
-  const contestId = params.contestId;
+function ProblemList({ params }) {
+  const { contestId } = use(params);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

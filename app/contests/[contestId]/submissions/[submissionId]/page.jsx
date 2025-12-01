@@ -1,33 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { SubmissionCodeViewer } from "./client";
 import Link from "next/link";
 import submissionModule from "@/api/submission/submission";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import PageLoading from "@/components/LoadingSpinner/PageLoading";
 import { getRelativeTime } from "@/utils/dateFormatter";
-import {
-  getVerdictName,
-  getVerdictColor,
-  getVerdictBgColor,
-} from "@/utils/verdictFormatter";
+import { getVerdictName, getVerdictColor } from "@/utils/verdictFormatter";
 
 export default function SubmissionPage({ params }) {
-  const [contestId, setContestId] = useState(null);
-  const [submissionId, setSubmissionId] = useState(null);
+  const { contestId, submissionId } = use(params);
   const [submissionData, setSubmissionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const intervalRef = useRef(null);
-
-  useEffect(() => {
-    // Unwrap params
-    Promise.resolve(params).then(({ contestId, submissionId }) => {
-      setContestId(contestId);
-      setSubmissionId(submissionId);
-    });
-  }, [params]);
 
   useEffect(() => {
     if (!submissionId) return;

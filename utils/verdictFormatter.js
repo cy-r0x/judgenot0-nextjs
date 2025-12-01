@@ -42,37 +42,35 @@ export const getVerdictColor = (verdict) => {
 };
 
 /**
- * Get background color class for verdict card
+ * Get icon component for verdict
  * @param {string} verdict - Verdict code
- * @returns {string} Tailwind background color class
+ * @param {Object} icons - Icon components object
+ * @returns {JSX.Element} Icon component
  */
-export const getVerdictBgColor = (verdict) => {
+export const getVerdictIcon = (verdict, icons) => {
   const lowerVerdict = verdict?.toLowerCase();
+  const { MdOutlineDone, MdClose, MdAccessTime, MdMemory, MdLoop } = icons;
 
   switch (lowerVerdict) {
     case "ac":
-    case "accepted":
-      return "bg-green-900/20";
+      return <MdOutlineDone className="text-green-500" title="Accepted" />;
     case "wa":
-    case "wrong answer":
-      return "bg-red-900/20";
+      return <MdClose className="text-red-500" title="Wrong Answer" />;
     case "tle":
-    case "time limit exceeded":
-      return "bg-purple-900/20";
+      return (
+        <MdAccessTime className="text-red-500" title="Time Limit Exceeded" />
+      );
     case "mle":
-    case "memory limit exceeded":
-      return "bg-orange-900/20";
+      return (
+        <MdMemory className="text-red-500" title="Memory Limit Exceeded" />
+      );
     case "re":
-    case "runtime error":
-      return "bg-pink-900/20";
+      return <MdClose className="text-red-500" title="Runtime Error" />;
     case "ce":
-    case "compilation error":
-      return "bg-yellow-900/20";
+      return <MdClose className="text-red-500" title="Compilation Error" />;
     case "pending":
-      return "bg-yellow-900/20";
-    case "running":
-      return "bg-blue-900/20";
+      return <MdLoop className="text-gray-400 animate-spin" title="Pending" />;
     default:
-      return "bg-gray-900/20";
+      return <MdClose className="text-red-500" title={verdict} />;
   }
 };

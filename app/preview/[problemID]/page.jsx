@@ -1,19 +1,13 @@
 "use client";
 import ProblemPreviewComponent from "@/components/ProblemPreviewComponent/ProblemPreviewComponet";
 import problemModule from "@/api/problem/problem";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 export default function PreviewPage({ params }) {
-  const [problemID, setProblemID] = useState(null);
+  const { problemID } = use(params);
   const [problemData, setProblemData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    Promise.resolve(params).then((resolvedParams) => {
-      setProblemID(resolvedParams.problemID);
-    });
-  }, [params]);
 
   useEffect(() => {
     if (!problemID) return;
