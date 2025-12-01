@@ -47,6 +47,19 @@ export function EditorSection({ problemData, contestId }) {
 
   const router = useRouter();
 
+  // Initialize code and language from last_submission
+  useEffect(() => {
+    if (problemData?.last_submission) {
+      const { source_code, language } = problemData.last_submission;
+      if (source_code) {
+        setCode(source_code);
+      }
+      if (language) {
+        setSelectedLanguage(language);
+      }
+    }
+  }, [problemData]);
+
   const handleCompileRun = async () => {
     if (!code.trim()) {
       setNotification({
@@ -61,6 +74,7 @@ export function EditorSection({ problemData, contestId }) {
       setNotification({
         visible: true,
         message: "Select programming language",
+
         type: "error",
       });
       return;
@@ -69,20 +83,12 @@ export function EditorSection({ problemData, contestId }) {
     setIsCompiling(true);
     setNotification({ visible: false, message: "", type: "info" });
 
-    const data = {
-      submission_id: null,
-      problem_id: null,
+    const { data: responseData, error } = await compileAndRun({
+      contest_id: contestId,
+      problem_id: problemData.id,
       language: selectedLanguage,
       source_code: code,
-      testcases: problemData.test_cases || [],
-      time_limit: problemData.time_limit,
-      memory_limit: problemData.memory_limit,
-      checker_precision: problemData.checker_precision,
-      checker_strict_space: problemData.checker_strict_space,
-      checker_type: problemData.checker_type,
-    };
-
-    const { data: responseData, error } = await compileAndRun(data);
+    });
 
     setIsCompiling(false);
 
@@ -136,16 +142,15 @@ export function EditorSection({ problemData, contestId }) {
     setIsSubmitting(true);
     setNotification({ visible: false, message: "", type: "info" });
 
-    const activeContestId = contestId ?? problemData.contest_id;
-
     const { data, error } = await submissionModule.submitSubmission({
       problem_id: problemData.id,
-      contest_id: activeContestId,
+      contest_id: contestId,
       source_code: code,
       language: selectedLanguage,
     });
 
     if (error) {
+      ``;
       setNotification({
         visible: true,
         message: error,
@@ -168,7 +173,7 @@ export function EditorSection({ problemData, contestId }) {
       return;
     }
 
-    router.push(`/contests/${activeContestId}/submissions/${submissionId}`);
+    router.push(`/contests/${contestId}/submissions/${submissionId}`);
   };
 
   const handleLanguageChange = (e) => {
@@ -176,7 +181,7 @@ export function EditorSection({ problemData, contestId }) {
   };
 
   return (
-    <div className="flex flex-col h-full px-4 py-2">
+    <div className="flex flex-col h-full px-4 py-2 ">
       <div className="mb-3 flex justify-between items-center">
         <div>
           <select
@@ -207,10 +212,11 @@ export function EditorSection({ problemData, contestId }) {
           />
         </div>
       </div>
-      <div className="flex-grow">
+      <div>
         <CodeEditor
           handleChange={setCode}
           selectedLanguage={selectedLanguage}
+          value={code}
         />
       </div>
       {/* Notification */}

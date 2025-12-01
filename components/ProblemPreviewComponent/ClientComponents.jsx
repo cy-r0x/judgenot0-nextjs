@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
-import Bar from "../BarComponent/BarComponent";
 import Button from "../ButtonComponent/Button";
-import Link from "next/link";
 import CodeEditor from "@/components/EditorComponent/EditorComponent";
 import NotificationComponent from "@/components/NotificationComponent/NotificationComponent";
 import { compileAndRun } from "@/utils/compileRun";
@@ -45,16 +43,10 @@ export function EditorSection({ problem, problemID }) {
     setNotification({ visible: false, message: "", type: "info" });
 
     const data = {
-      submission_id: null,
-      problem_id: null,
+      problem_id: problemID ? parseInt(problemID) : null,
       language: selectedLanguage,
       source_code: code,
-      testcases: problem.test_cases || [],
-      time_limit: problem.time_limit,
-      memory_limit: problem.memory_limit,
-      checker_precision: problem.checker_precision,
-      checker_strict_space: problem.checker_strict_space,
-      checker_type: problem.checker_type,
+      contest_id: null,
     };
 
     const { data: responseData, error } = await compileAndRun(data);

@@ -4,7 +4,7 @@ import { cpp } from "@codemirror/lang-cpp";
 import { python } from "@codemirror/lang-python";
 import { java } from "@codemirror/lang-java";
 
-function CodeEditor({ handleChange, selectedLanguage }) {
+function CodeEditor({ handleChange, selectedLanguage, value }) {
   const languageExtensions = {
     cpp: cpp(),
     python: python(),
@@ -18,7 +18,8 @@ function CodeEditor({ handleChange, selectedLanguage }) {
 
   return (
     <CodeMirror
-      height="calc(100vh - 150px)"
+      value={value}
+      height="100vh"
       extensions={[lang]}
       onChange={changeCode}
       theme={monokai}

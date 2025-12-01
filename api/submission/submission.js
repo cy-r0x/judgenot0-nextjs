@@ -25,7 +25,7 @@ submissionModule.submitSubmission = async ({
 }) => {
   try {
     const response = await apiClient.post(API_ENDPOINTS.SUBMISSIONS, {
-      problem_id,
+      problem_id: problem_id ? parseInt(problem_id) : undefined,
       contest_id: contest_id ? parseInt(contest_id) : undefined,
       source_code,
       language,
