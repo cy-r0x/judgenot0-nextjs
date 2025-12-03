@@ -10,9 +10,11 @@ import { RiTrophyFill, RiMedalFill, RiStarFill } from "react-icons/ri";
  * @param {number} props.standingsData.contest_id - Contest ID
  * @param {number} props.standingsData.total_problem_count - Total number of problems
  * @param {Array} props.standingsData.standings - Array of user standings
+ * @param {number} props.currentPage - Current page number
+ * @param {number} props.limit - Items per page
  * @returns {JSX.Element} Standings table component
  */
-export default function StandingsComponent({ standingsData }) {
+export default function StandingsComponent({ standingsData, currentPage = 1, limit = 100 }) {
   const { total_problem_count, standings, problem_solve_status } =
     standingsData;
 
@@ -153,7 +155,7 @@ export default function StandingsComponent({ standingsData }) {
         </thead>
         <tbody className="divide-y divide-zinc-800/50">
           {standings.map((user, index) => {
-            const rank = index + 1;
+            const rank = (currentPage - 1) * limit + index + 1;
             const isTopThree = rank <= 3;
 
             return (

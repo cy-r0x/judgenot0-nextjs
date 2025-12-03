@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Bar from "@/components/BarComponent/BarComponent";
 import StandingsComponent from "@/components/StandingsComponent/StandingsComponent";
 import { CompactTimer } from "@/components/TimeCounterComponent/TimeCounterComponent";
@@ -25,6 +26,8 @@ export default function StandingsPage({ params }) {
   const [isLoading, setIsLoading] = useState(true);
   const [contestId, setContestId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Unwrap params
   useEffect(() => {
@@ -32,6 +35,15 @@ export default function StandingsPage({ params }) {
       setContestId(resolvedParams.contestId);
     });
   }, [params]);
+
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    const parsed = pageParam ? parseInt(pageParam, 10) : 1;
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      setCurrentPage(parsed);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [searchParams]);
 
   // Fetch standings data
   const fetchStandings = async (page = 1) => {
@@ -94,8 +106,7 @@ export default function StandingsPage({ params }) {
 
   // Handle page change
   const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    router.push(`?page=${page}`, { scroll: false });
   };
 
   if (isLoading) {
@@ -149,13 +160,17 @@ export default function StandingsPage({ params }) {
 
         {/* Standings Table */}
         <div className="bg-zinc-900 rounded-lg shadow-xl overflow-hidden border border-zinc-800">
-          <StandingsComponent standingsData={standingsData} />
+          <StandingsComponent 
+            standingsData={standingsData} 
+            currentPage={currentPage}
+            limit={standingsData?.limit || 100}
+          />
         </div>
 
         {/* Pagination */}
         {standingsData && standingsData.total_page > 1 && (
           <Pagination
-            currentPage={standingsData.page}
+            currentPage={currentPage}
             totalPages={standingsData.total_page}
             totalItems={standingsData.total_item}
             limit={standingsData.limit}
